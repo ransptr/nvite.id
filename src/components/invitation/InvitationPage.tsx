@@ -1,6 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {AnimatePresence, motion, useMotionValue, useReducedMotion, useScroll, useTransform} from 'framer-motion';
-import {Parallax} from 'react-scroll-parallax';
 import {
   ArrowRight,
   CalendarPlus,
@@ -20,6 +19,7 @@ import {
 } from 'lucide-react';
 
 import {RsvpSection} from '@/src/components/invitation/RsvpSection';
+import {TwoAreBetterThanOneSection} from '@/src/components/invitation/TwoAreBetterThanOneSection';
 import {
   usePointerParallax,
   useSectionParallax,
@@ -61,15 +61,12 @@ export function InvitationPage({invitation}: InvitationPageProps) {
   const [storyIndex, setStoryIndex] = useState(0);
   const [guestName, setGuestName] = useState('Guest Name');
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
-  const quoteTextRailRef = useRef<HTMLDivElement | null>(null);
-  const [quoteTextStyle, setQuoteTextStyle] = useState<React.CSSProperties>({});
 
   const {scrollYProgress} = useScroll();
   const heroSection = useSectionParallax<HTMLElement>({
     y: [-90, 120],
     scale: [1.16, 1.04],
   });
-  const quoteSection = useSectionParallax<HTMLElement>({y: [0, 0], scale: [1, 1]});
   const storyIntroSection = useSectionParallax<HTMLElement>({
     y: [-90, 90],
     scale: [1.12, 1.02],
@@ -85,16 +82,14 @@ export function InvitationPage({invitation}: InvitationPageProps) {
     [0, 0.18, 1],
     shouldReduceMotion ? [0.52, 0.52, 0.52] : [0.14, 0.52, 0.84],
   );
-  const heroContentY = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-24, 88]);
+  const heroContentY = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-12, 58]);
   const heroOpacity = useTransform(
     heroSection.progress,
     [0, 0.24, 0.95],
     shouldReduceMotion ? [1, 1, 1] : [1, 0.82, 0.2],
   );
-  const heroMarqueeNear = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-20, 80]);
-  const heroMarqueeFar = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [20, 130]);
-  const heroScriptureY = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [10, 76]);
-  const quoteTextParallaxY = useTransform(quoteSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-24, 22]);
+  const heroMarqueeNear = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-10, 62]);
+  const heroScriptureY = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [0, 34]);
   const storyTitleY = useTransform(storyIntroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-20, 52]);
   const storyBackdropY = useTransform(storyIntroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-100, 110]);
   const countdownMarqueeY = useTransform(countdownSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-24, 28]);
@@ -163,55 +158,6 @@ export function InvitationPage({invitation}: InvitationPageProps) {
     }
   }, [invitation.seo.description, invitation.seo.title]);
 
-  useEffect(() => {
-    const section = quoteSection.ref.current;
-    const rail = quoteTextRailRef.current;
-
-    if (!section || !rail) return;
-
-    let frame = 0;
-
-    const updateRail = () => {
-      frame = 0;
-
-      if (window.innerWidth < 768) {
-        setQuoteTextStyle({});
-        return;
-      }
-
-      const topOffset = 0;
-      const sectionRect = section.getBoundingClientRect();
-      const railHeight = rail.offsetHeight;
-
-      if (sectionRect.top > topOffset) {
-        setQuoteTextStyle({});
-        return;
-      }
-
-      if (sectionRect.bottom <= topOffset + railHeight) {
-        setQuoteTextStyle({position: 'absolute', left: 0, right: 0, bottom: 0, top: 'auto'});
-        return;
-      }
-
-      setQuoteTextStyle({position: 'fixed', top: topOffset, left: 0, right: 0});
-    };
-
-    const scheduleUpdate = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(updateRail);
-    };
-
-    updateRail();
-    window.addEventListener('scroll', scheduleUpdate, {passive: true});
-    window.addEventListener('resize', scheduleUpdate);
-
-    return () => {
-      if (frame) window.cancelAnimationFrame(frame);
-      window.removeEventListener('scroll', scheduleUpdate);
-      window.removeEventListener('resize', scheduleUpdate);
-    };
-  }, [quoteSection.ref]);
-
   const calendarUrl = useMemo(
     () => buildCalendarDataUrl(invitation.countdown.calendar),
     [invitation.countdown.calendar],
@@ -263,7 +209,7 @@ export function InvitationPage({invitation}: InvitationPageProps) {
               audioEnabled={isAudioEnabled}
             />
 
-            <section ref={heroSection.ref} id="home" className="relative min-h-screen overflow-hidden">
+            <section ref={heroSection.ref} id="home" className="relative min-h-screen overflow-hidden border-b border-white/6">
               <motion.div
                 {...heroPointer.bind}
                 style={{...heroSection.style, ...heroPointer.style}}
@@ -283,241 +229,35 @@ export function InvitationPage({invitation}: InvitationPageProps) {
                 style={{opacity: heroOverlay}}
                 className="absolute inset-0 bg-black"
               />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04),transparent_42%),linear-gradient(to_bottom,rgba(0,0,0,0.2),rgba(0,0,0,0.84))]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_22%,rgba(255,255,255,0.08),transparent_42%),linear-gradient(to_bottom,rgba(0,0,0,0.26),rgba(0,0,0,0.88))]" />
 
-              <motion.div style={{y: heroMarqueeNear}} className="absolute inset-x-0 top-20 space-y-3 px-4 md:top-24 md:px-8">
-                <Marquee text={invitation.couple.joinedName} className="text-white" />
-              </motion.div>
-              <motion.div style={{y: heroMarqueeFar}} className="absolute inset-x-0 top-36 space-y-3 px-4 md:top-44 md:px-8">
-                <Marquee text={invitation.couple.joinedName} className="text-white/10" muted />
+              <div className="absolute inset-x-0 top-0 z-20">
+                <div className="mx-auto flex max-w-[1440px] items-center justify-between border-b border-white/16 px-5 py-6 md:px-10 md:py-7">
+                  <p className="text-[12px] uppercase tracking-[0.02em] text-white/52">{invitation.couple.coverLabel}</p>
+                  <p className="text-[12px] uppercase tracking-[0.02em] text-white/52">{invitation.couple.dateLabel}</p>
+                </div>
+              </div>
+
+              <motion.div style={{y: heroMarqueeNear, opacity: heroOpacity}} className="absolute inset-x-0 top-[13vh] z-20 px-4 md:px-0">
+                <Marquee text={invitation.couple.joinedName} className="hero-marquee text-white/60" />
               </motion.div>
 
               <motion.div
                 style={{y: heroContentY, opacity: heroOpacity}}
-                className="relative z-10 flex min-h-screen items-center justify-center px-5 py-24 md:px-10"
+                className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1440px] px-5 pt-[35vh] md:px-10 md:pt-[34vh]"
               >
-                <div className="w-full max-w-[1200px] space-y-12 text-center">
-                  <RevealOnScroll>
-                    <p className="text-[11px] uppercase tracking-[0.5em] text-white/70">
-                      {invitation.couple.coverLabel}
-                    </p>
-                  </RevealOnScroll>
-                  <RevealOnScroll delay={0.06}>
-                    <h1 className="font-display text-[18vw] italic leading-[0.88] tracking-[-0.05em] text-white md:text-[11rem] lg:text-[14rem]">
-                      {invitation.couple.joinedName}
-                    </h1>
-                  </RevealOnScroll>
-                  <RevealOnScroll delay={0.12}>
-                    <p className="text-[11px] uppercase tracking-[0.45em] text-white/65">
-                      {invitation.couple.dateLabel}
-                    </p>
-                  </RevealOnScroll>
-
-                  <RevealOnScroll delay={0.18} className="mx-auto max-w-4xl rounded-[2rem] border border-white/12 bg-black/25 px-6 py-8 backdrop-blur-md md:px-12 md:py-10">
-                    <motion.p style={{y: heroScriptureY}} className="font-copy text-base leading-relaxed text-white/82 md:text-xl">
-                      &ldquo;{invitation.couple.scripture.text}&rdquo;
-                    </motion.p>
-                    <p className="mt-5 text-[11px] uppercase tracking-[0.32em] text-white/55">
-                      {invitation.couple.scripture.citation}
-                    </p>
-                  </RevealOnScroll>
-                </div>
+                <RevealOnScroll className="max-w-[25rem] md:max-w-[31rem]">
+                  <motion.p style={{y: heroScriptureY}} className="font-copy text-sm leading-relaxed text-white/64 md:text-[2rem] md:leading-[1.45]">
+                    &ldquo;{invitation.couple.scripture.text}&rdquo;
+                  </motion.p>
+                  <p className="mt-4 text-[12px] uppercase tracking-[0.01em] text-white/42 md:mt-5">
+                    {invitation.couple.scripture.citation}
+                  </p>
+                </RevealOnScroll>
               </motion.div>
             </section>
 
-            <section ref={quoteSection.ref} className="relative min-h-[320vh] border-t border-white/6 bg-black px-5 md:min-h-[420vh] md:px-10">
-              <div className="mx-auto max-w-[1440px]">
-                <div className="sticky top-0 h-screen overflow-hidden bg-black">
-                  <div className="absolute inset-0">
-                    <Parallax
-                      disabled={shouldReduceMotion}
-                      translateY={['-28%', '24%']}
-                      scale={[1.03, 1.1]}
-                      easing="easeInOutCubic"
-                      className="absolute left-[4%] top-[14%] z-10 hidden w-[13vw] max-w-[220px] min-w-[140px] lg:block"
-                    >
-                      <div className="grid grid-cols-2 gap-0 border border-white/8 bg-black/50">
-                        {invitation.media.gallery.slice(0, 4).map((image) => (
-                          <img
-                            key={image}
-                            src={image}
-                            alt="Pre-wedding memory"
-                            className="aspect-square w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        ))}
-                      </div>
-                    </Parallax>
-
-                    <Parallax
-                      disabled={shouldReduceMotion}
-                      translateY={['-16%', '28%']}
-                      scale={[1.02, 1.08]}
-                      easing="easeInOutCubic"
-                      className="absolute left-1/2 top-[3%] z-20 hidden w-[20vw] max-w-[320px] min-w-[220px] -translate-x-1/2 lg:block"
-                    >
-                      <img
-                        src={invitation.media.quoteImages[1]}
-                        alt="Centered wedding portrait"
-                        className="aspect-[2/3] w-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    </Parallax>
-
-                    <Parallax
-                      disabled={shouldReduceMotion}
-                      translateY={['22%', '-16%']}
-                      scale={[1.01, 1.06]}
-                      easing="easeInOutCubic"
-                      className="absolute right-[6%] top-[58%] z-10 hidden w-[14vw] max-w-[230px] min-w-[160px] lg:block"
-                    >
-                      <div className="space-y-5">
-                        {invitation.media.gallery.slice(4, 7).map((image) => (
-                          <img
-                            key={image}
-                            src={image}
-                            alt="Framed wedding portrait"
-                            className="aspect-[4/5] w-full border border-white/8 object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        ))}
-                      </div>
-                    </Parallax>
-
-                    <Parallax
-                      disabled={shouldReduceMotion}
-                      translateY={['-34%', '20%']}
-                      scale={[1.01, 1.05]}
-                      easing="easeInOutCubic"
-                      className="absolute left-[14%] top-[56%] z-5 hidden w-[12vw] max-w-[180px] min-w-[120px] lg:block"
-                    >
-                      <div className="space-y-4">
-                        {invitation.media.gallery.slice(7, 9).map((image) => (
-                          <img
-                            key={image}
-                            src={image}
-                            alt="Editorial collage portrait"
-                            className="aspect-[4/5] w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        ))}
-                      </div>
-                    </Parallax>
-
-                    <Parallax
-                      disabled={shouldReduceMotion}
-                      translateY={['30%', '-22%']}
-                      scale={[1.02, 1.06]}
-                      easing="easeInOutCubic"
-                      className="absolute right-[20%] top-[18%] z-15 hidden w-[18vw] max-w-[280px] min-w-[180px] lg:block"
-                    >
-                      <img
-                        src={invitation.media.gallery[9]}
-                        alt="Wide wedding memory"
-                        className="aspect-[5/4] w-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    </Parallax>
-
-                    <Parallax
-                      disabled={shouldReduceMotion}
-                      translateY={['-12%', '18%']}
-                      scale={[1.02, 1.05]}
-                      easing="easeInOutCubic"
-                      className="absolute left-[33%] top-[64%] z-15 hidden w-[15vw] max-w-[230px] min-w-[150px] lg:block"
-                    >
-                      <div className="grid grid-cols-1 gap-4">
-                        {invitation.media.gallery.slice(10, 12).map((image) => (
-                          <img
-                            key={image}
-                            src={image}
-                            alt="Scrolling wedding memory"
-                            className="aspect-[4/5] w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        ))}
-                      </div>
-                    </Parallax>
-
-                    <Parallax
-                      disabled={shouldReduceMotion}
-                      translateY={['18%', '-26%']}
-                      scale={[1.01, 1.04]}
-                      easing="easeInOutCubic"
-                      className="absolute right-[34%] top-[10%] z-5 hidden w-[12vw] max-w-[180px] min-w-[130px] lg:block"
-                    >
-                      <img
-                        src={invitation.media.quoteImages[0]}
-                        alt="Portrait accent"
-                        className="aspect-[4/5] w-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    </Parallax>
-
-                    <div className="absolute inset-0 flex items-center justify-center px-4 lg:hidden">
-                      <div className="grid w-full max-w-sm grid-cols-[0.9fr_1.05fr_0.85fr] items-end gap-3">
-                        <Parallax disabled={shouldReduceMotion} translateY={['-14%', '16%']} className="self-start">
-                          <img
-                            src={invitation.media.gallery[0]}
-                            alt="Pre-wedding memory"
-                            className="aspect-[4/5] w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        </Parallax>
-                        <Parallax disabled={shouldReduceMotion} translateY={['-10%', '18%']} className="self-start">
-                          <img
-                            src={invitation.media.quoteImages[1]}
-                            alt="Centered wedding portrait"
-                            className="aspect-[2/3] w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        </Parallax>
-                        <Parallax disabled={shouldReduceMotion} translateY={['16%', '-10%']} className="self-end">
-                          <img
-                            src={invitation.media.gallery[4]}
-                            alt="Framed wedding portrait"
-                            className="aspect-[4/5] w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        </Parallax>
-                        <Parallax disabled={shouldReduceMotion} translateY={['10%', '-14%']} className="col-span-2 w-[72%] justify-self-start">
-                          <img
-                            src={invitation.media.gallery[9]}
-                            alt="Additional wedding memory"
-                            className="aspect-[5/4] w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        </Parallax>
-                        <Parallax disabled={shouldReduceMotion} translateY={['-12%', '14%']} className="w-full justify-self-end">
-                          <img
-                            src={invitation.media.gallery[10]}
-                            alt="Additional wedding memory"
-                            className="aspect-[4/5] w-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        </Parallax>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    ref={quoteTextRailRef}
-                    style={quoteTextStyle}
-                    className="pointer-events-none absolute inset-x-0 top-0 z-50 flex justify-center bg-black px-6 pb-5 pt-5 md:pb-7 md:pt-6"
-                  >
-                    <motion.div style={{y: quoteTextParallaxY}} className="mx-auto max-w-[940px] text-center">
-                      <h2 className="font-display text-[2rem] italic leading-[0.95] tracking-[-0.04em] text-[#cfa481] sm:text-[2.7rem] md:text-[3.6rem] lg:text-[4.6rem] xl:text-[5.1rem]">
-                        Two are better than one,<br />
-                        for they have a good return<br />
-                        for their labor.
-                      </h2>
-                    </motion.div>
-                  </div>
-
-                  <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent" />
-                </div>
-              </div>
-            </section>
+            <TwoAreBetterThanOneSection invitation={invitation} />
 
             <section id="profile" className="border-t border-white/6 bg-[#050505] px-5 py-24 md:px-10">
               <div className="mx-auto max-w-[1440px] space-y-10">
@@ -1274,29 +1014,21 @@ function ThankYouSection({invitation}: {invitation: InvitationConfig}) {
   const thanksParallax = useSectionParallax<HTMLElement>({y: [-24, 30]});
   const imageFloat = useTransform(thanksParallax.progress, [0, 1], thanksParallax.shouldReduceMotion ? [0, 0] : [-18, 24]);
   const textFloat = useTransform(thanksParallax.progress, [0, 1], thanksParallax.shouldReduceMotion ? [0, 0] : [-14, 14]);
+  const guestPairLabel = invitation.couple.joinedName.replace(/\s*&\s*/g, ' - ').toUpperCase();
 
   return (
     <section ref={thanksParallax.ref} className="border-t border-white/6 bg-[#050505] px-5 py-10 text-white md:px-10 md:py-8">
-      <div className="mx-auto flex min-h-[92vh] max-w-[1440px] flex-col justify-between">
-        <div className="flex justify-end">
-          <a
-            href={invitation.footer.creditUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[10px] uppercase tracking-[0.36em] text-white/0"
-            aria-hidden="true"
-          >
-            .
-          </a>
-        </div>
-
-        <div className="flex flex-1 items-center justify-center py-12">
-          <RevealOnScroll className="mx-auto flex w-full max-w-[900px] flex-col items-center text-center">
-            <motion.div style={{y: textFloat}} className="flex items-center justify-center gap-3 sm:gap-5 md:gap-7">
-              <span className="font-display text-[3.8rem] font-medium leading-none tracking-[-0.05em] text-[#cbc6c0] sm:text-[5.2rem] md:text-[6.2rem] lg:text-[7rem]">
+      <div className="mx-auto flex min-h-[92vh] max-w-[1440px] flex-col">
+        <div className="flex flex-1 items-center justify-center py-12 md:py-16">
+          <RevealOnScroll className="mx-auto flex w-full max-w-[980px] flex-col items-center text-center">
+            <motion.div style={{y: textFloat}} className="flex items-end justify-center gap-3 sm:gap-5 md:gap-6">
+              <span className="font-display text-[3.3rem] font-medium leading-none tracking-[-0.04em] text-[#a9a4a0] sm:text-[4.3rem] md:text-[5.6rem] lg:text-[6.5rem]">
                 {invitation.footer.closingTitle[0]}
               </span>
-              <motion.div style={{y: imageFloat}} className="h-[52px] w-[88px] overflow-hidden bg-[#121212] shadow-[0_12px_30px_rgba(0,0,0,0.35)] sm:h-[64px] sm:w-[108px] md:h-[78px] md:w-[132px] lg:h-[88px] lg:w-[150px]">
+              <motion.div
+                style={{y: imageFloat}}
+                className="h-[44px] w-[72px] overflow-hidden bg-[#121212] shadow-[0_10px_26px_rgba(0,0,0,0.35)] sm:h-[50px] sm:w-[86px] md:h-[62px] md:w-[106px]"
+              >
                 <img
                   src={invitation.media.thankYouImage}
                   alt="Thank you portrait"
@@ -1304,33 +1036,36 @@ function ThankYouSection({invitation}: {invitation: InvitationConfig}) {
                   referrerPolicy="no-referrer"
                 />
               </motion.div>
-              <span className="font-display text-[3.8rem] italic leading-none tracking-[-0.05em] text-[#cbc6c0] sm:text-[5.2rem] md:text-[6.2rem] lg:text-[7rem]">
+              <span className="font-display text-[3.3rem] italic leading-none tracking-[-0.04em] text-[#a9a4a0] sm:text-[4.3rem] md:text-[5.6rem] lg:text-[6.5rem]">
                 {invitation.footer.closingTitle[1]}
               </span>
             </motion.div>
 
-            <motion.p style={{y: textFloat}} className="mt-6 max-w-[780px] font-display text-[2.35rem] leading-[0.98] tracking-[-0.04em] text-[#cbc6c0] sm:mt-8 sm:text-[3.2rem] md:text-[4.2rem] lg:text-[4.85rem]">
+            <motion.p
+              style={{y: textFloat}}
+              className="mt-6 max-w-[860px] font-display text-[2.1rem] leading-[1.04] tracking-[-0.02em] text-[#a9a4a0] sm:mt-7 sm:text-[2.6rem] md:text-[3.5rem] lg:text-[4.15rem]"
+            >
               {invitation.footer.closingText}
             </motion.p>
 
-            <motion.p style={{y: textFloat}} className="mt-5 text-[10px] uppercase tracking-[0.4em] text-[#a7a09a] md:mt-7 md:text-[13px]">
-              {invitation.couple.joinedName.toUpperCase()}
+            <motion.p style={{y: textFloat}} className="mt-5 text-[10px] uppercase tracking-[0.28em] text-[#8a8580] md:mt-6 md:text-[11px]">
+              {guestPairLabel}
             </motion.p>
           </RevealOnScroll>
         </div>
 
-        <div className="flex flex-col items-center gap-3 pb-4 text-center">
+        <div className="flex flex-col items-center gap-2 pb-3 text-center">
           <a
             href={invitation.footer.creditUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 text-[9px] uppercase tracking-[0.28em] text-white/45 transition hover:text-white/80 md:text-[10px]"
+            className="inline-flex items-center gap-2 text-[8px] uppercase tracking-[0.24em] text-white/42 transition hover:text-white/80 md:text-[9px]"
           >
             {invitation.footer.creditLabel}
             <ExternalLink className="h-3 w-3" />
           </a>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[9px] uppercase tracking-[0.26em] text-white/52 md:text-[10px]">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[8px] uppercase tracking-[0.22em] text-white/50 md:text-[9px]">
             {invitation.footer.links.map((link) => (
               <a
                 key={link.label}
@@ -1345,7 +1080,7 @@ function ThankYouSection({invitation}: {invitation: InvitationConfig}) {
             ))}
           </div>
 
-          <p className="text-[9px] text-white/40 md:text-[10px]">
+          <p className="text-[8px] text-white/38 md:text-[9px]">
             &copy; All rights reserved by groovepublic
           </p>
         </div>

@@ -82,6 +82,16 @@
   letter-spacing: -0.05em;
 }
 
+.hero-marquee .marquee-item {
+  padding-right: 2.6rem;
+  font-family: var(--font-copy);
+  font-size: clamp(4.2rem, 9.2vw, 8.2rem);
+  font-style: normal;
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+}
+
 @keyframes invitation-marquee {
   0% {
     transform: translate3d(0, 0, 0);
