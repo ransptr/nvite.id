@@ -61,6 +61,8 @@ export function InvitationPage({invitation}: InvitationPageProps) {
   const [storyIndex, setStoryIndex] = useState(0);
   const [guestName, setGuestName] = useState('Guest Name');
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
+  const quoteTextRailRef = useRef<HTMLDivElement | null>(null);
+  const [quoteTextStyle, setQuoteTextStyle] = useState<React.CSSProperties>({});
 
   const {scrollYProgress} = useScroll();
   const heroSection = useSectionParallax<HTMLElement>({
@@ -92,6 +94,7 @@ export function InvitationPage({invitation}: InvitationPageProps) {
   const heroMarqueeNear = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-20, 80]);
   const heroMarqueeFar = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [20, 130]);
   const heroScriptureY = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [10, 76]);
+  const quoteTextParallaxY = useTransform(quoteSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-24, 22]);
   const storyTitleY = useTransform(storyIntroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-20, 52]);
   const storyBackdropY = useTransform(storyIntroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-100, 110]);
   const countdownMarqueeY = useTransform(countdownSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-24, 28]);
@@ -160,6 +163,55 @@ export function InvitationPage({invitation}: InvitationPageProps) {
     }
   }, [invitation.seo.description, invitation.seo.title]);
 
+  useEffect(() => {
+    const section = quoteSection.ref.current;
+    const rail = quoteTextRailRef.current;
+
+    if (!section || !rail) return;
+
+    let frame = 0;
+
+    const updateRail = () => {
+      frame = 0;
+
+      if (window.innerWidth < 768) {
+        setQuoteTextStyle({});
+        return;
+      }
+
+      const topOffset = 0;
+      const sectionRect = section.getBoundingClientRect();
+      const railHeight = rail.offsetHeight;
+
+      if (sectionRect.top > topOffset) {
+        setQuoteTextStyle({});
+        return;
+      }
+
+      if (sectionRect.bottom <= topOffset + railHeight) {
+        setQuoteTextStyle({position: 'absolute', left: 0, right: 0, bottom: 0, top: 'auto'});
+        return;
+      }
+
+      setQuoteTextStyle({position: 'fixed', top: topOffset, left: 0, right: 0});
+    };
+
+    const scheduleUpdate = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateRail);
+    };
+
+    updateRail();
+    window.addEventListener('scroll', scheduleUpdate, {passive: true});
+    window.addEventListener('resize', scheduleUpdate);
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+    };
+  }, [quoteSection.ref]);
+
   const calendarUrl = useMemo(
     () => buildCalendarDataUrl(invitation.countdown.calendar),
     [invitation.countdown.calendar],
@@ -192,13 +244,13 @@ export function InvitationPage({invitation}: InvitationPageProps) {
             onOpen={openInvitation}
           />
         ) : (
-          <motion.main
-            key="invitation"
-            initial={{opacity: 0}}
-            animate={{opacity: 1}}
-            exit={{opacity: 0}}
-            className="relative overflow-hidden"
-          >
+            <motion.main
+              key="invitation"
+              initial={{opacity: 0}}
+              animate={{opacity: 1}}
+              exit={{opacity: 0}}
+              className="relative overflow-x-hidden"
+            >
             <motion.div
               style={{scaleX: scrollYProgress}}
               className="fixed left-0 right-0 top-0 z-[90] h-px origin-left bg-[#d8b181]"
@@ -448,14 +500,18 @@ export function InvitationPage({invitation}: InvitationPageProps) {
                     </div>
                   </div>
 
-                  <div className="pointer-events-none absolute inset-x-0 top-[10vh] z-50 flex justify-center px-6">
-                    <div className="mx-auto max-w-[940px] text-center">
-                      <h2 className="font-display text-[2.35rem] italic leading-[0.94] tracking-[-0.045em] text-[#cfa481] sm:text-[3.2rem] md:text-[4.2rem] lg:text-[5.2rem] xl:text-[5.8rem]">
+                  <div
+                    ref={quoteTextRailRef}
+                    style={quoteTextStyle}
+                    className="pointer-events-none absolute inset-x-0 top-0 z-50 flex justify-center bg-black px-6 pb-5 pt-5 md:pb-7 md:pt-6"
+                  >
+                    <motion.div style={{y: quoteTextParallaxY}} className="mx-auto max-w-[940px] text-center">
+                      <h2 className="font-display text-[2rem] italic leading-[0.95] tracking-[-0.04em] text-[#cfa481] sm:text-[2.7rem] md:text-[3.6rem] lg:text-[4.6rem] xl:text-[5.1rem]">
                         Two are better than one,<br />
                         for they have a good return<br />
                         for their labor.
                       </h2>
-                    </div>
+                    </motion.div>
                   </div>
 
                   <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent" />
@@ -1095,21 +1151,86 @@ function GallerySection({
   invitation: InvitationConfig;
   onOpenImage: (image: string) => void;
 }) {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const leftColumnRef = useRef<HTMLDivElement | null>(null);
+  const leftRailRef = useRef<HTMLDivElement | null>(null);
+  const [leftRailStyle, setLeftRailStyle] = useState<React.CSSProperties>({});
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const leftColumn = leftColumnRef.current;
+    const leftRail = leftRailRef.current;
+
+    if (!section || !leftColumn || !leftRail) return;
+
+    let frame = 0;
+
+    const updateRail = () => {
+      frame = 0;
+
+      if (window.innerWidth < 768) {
+        setLeftRailStyle({});
+        return;
+      }
+
+      const topOffset = 0;
+      const sectionRect = section.getBoundingClientRect();
+      const leftColumnRect = leftColumn.getBoundingClientRect();
+      const railHeight = leftRail.offsetHeight;
+
+      if (sectionRect.top > topOffset) {
+        setLeftRailStyle({});
+        return;
+      }
+
+      if (sectionRect.bottom <= topOffset + railHeight) {
+        setLeftRailStyle({position: 'absolute', left: 0, right: 0, bottom: 0});
+        return;
+      }
+
+      setLeftRailStyle({
+        position: 'fixed',
+        top: topOffset,
+        left: leftColumnRect.left,
+        width: leftColumnRect.width,
+      });
+    };
+
+    const scheduleUpdate = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateRail);
+    };
+
+    updateRail();
+    window.addEventListener('scroll', scheduleUpdate, {passive: true});
+    window.addEventListener('resize', scheduleUpdate);
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+    };
+  }, []);
+
   return (
-    <section id="gallery" className="border-t border-black/6 bg-[#cfcfcf] px-5 py-24 text-[#111] md:px-10">
+    <section ref={sectionRef} id="gallery" className="border-t border-black/6 bg-[#cfcfcf] px-5 py-24 text-[#111] md:px-10">
       <div className="mx-auto max-w-[1440px] md:grid md:grid-cols-[minmax(240px,0.68fr)_1fr] md:items-stretch md:gap-10 lg:grid-cols-[minmax(280px,0.72fr)_1fr] lg:gap-12 xl:gap-16">
-        <div className="relative mb-10 self-start md:mb-0 md:h-full">
-          <div className="sticky top-0 z-20 flex h-screen items-start bg-[#cfcfcf] pt-14 md:top-0 md:pt-16 lg:pt-24">
+        <div ref={leftColumnRef} className="relative mb-8 md:mb-0">
+          <div
+            ref={leftRailRef}
+            style={leftRailStyle}
+            className="z-30 bg-[#cfcfcf] pb-5 pt-6 md:pb-8 md:pt-10 lg:pt-14"
+          >
             <div className="max-w-[22rem] pr-4">
-              <p className="text-[10px] uppercase tracking-[0.4em] text-black/45">Gallery</p>
-              <h2 className="mt-5 font-display text-5xl italic leading-[0.9] md:text-7xl lg:text-8xl">
-                Our Pre-wedding Celebration.
-              </h2>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-black/45">Gallery</p>
+            <h2 className="mt-4 font-display text-4xl italic leading-[0.92] md:text-6xl lg:text-7xl">
+              Our Pre-wedding Celebration.
+            </h2>
             </div>
           </div>
         </div>
 
-        <div className="space-y-8 md:pt-0 lg:pt-24">
+        <div className="space-y-8">
           {invitation.media.gallery.map((image, index) => (
             <div key={image}>
               <GalleryCard image={image} index={index} onOpenImage={onOpenImage} />
