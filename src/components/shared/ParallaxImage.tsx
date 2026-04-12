@@ -1,4 +1,4 @@
-import {motion, useReducedMotion, useScroll, useSpring, useTransform} from 'framer-motion';
+import {motion, useReducedMotion, useScroll, useTransform} from 'framer-motion';
 import {useEffect, useRef, useState} from 'react';
 import type {ReactNode, RefObject} from 'react';
 
@@ -43,18 +43,12 @@ export function ParallaxImage({
     target: isHydrated ? (targetRef ?? rootRef) : undefined,
     offset: ['start end', 'end start'] as any,
   });
-  const y = useSpring(
-    useTransform(
-      scrollYProgress,
-      [0, 1],
-      shouldReduceMotion ? [0, 0] : [-(speed * 240), speed * 240],
-    ),
-    {stiffness: 120, damping: 22, mass: 0.45},
+  const y = useTransform(
+    scrollYProgress,
+    [0, 1],
+    shouldReduceMotion ? [0, 0] : [-(speed * 240), speed * 240],
   );
-  const scale = useSpring(
-    useTransform(scrollYProgress, [0, 1], shouldReduceMotion ? [1, 1] : [1.16, 1.03]),
-    {stiffness: 120, damping: 22, mass: 0.45},
-  );
+  const scale = useTransform(scrollYProgress, [0, 1], shouldReduceMotion ? [1, 1] : [1.16, 1.03]);
   const pointer = usePointerParallax({strength: mouseStrength, rotate: mouseStrength / 2, disabled: !enablePointer});
 
   return (

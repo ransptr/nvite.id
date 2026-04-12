@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {motion, useReducedMotion, useScroll, useSpring, useTransform} from 'framer-motion';
+import {motion, useReducedMotion, useScroll, useTransform} from 'framer-motion';
 import type {MotionValue} from 'framer-motion';
 
 import type {InvitationConfig} from '@/src/types/invitation';
@@ -46,11 +46,7 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
     offset: ['start start', 'end end'],
   });
   
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 95,
-    damping: 28,
-    mass: 0.42,
-  });
+  const smoothProgress = scrollYProgress;
 
   const pool = useMemo(() => {
     const images = [
@@ -155,7 +151,7 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
       className="relative bg-[#000000] px-4 md:min-h-[220vh] md:px-10"
     >
       <div className="mx-auto max-w-[1440px] py-10 pb-10 md:py-16">
-        <div className="hidden md:grid md:grid-cols-[minmax(160px,0.54fr)_minmax(440px,0.92fr)_minmax(160px,0.54fr)] md:items-stretch md:gap-10 lg:grid-cols-[minmax(170px,0.56fr)_minmax(600px,1.06fr)_minmax(170px,0.56fr)] lg:gap-16">
+        <div className="hidden md:grid md:grid-cols-[minmax(130px,0.36fr)_minmax(760px,1.42fr)_minmax(130px,0.36fr)] md:items-stretch md:gap-6 lg:grid-cols-[minmax(150px,0.38fr)_minmax(860px,1.54fr)_minmax(150px,0.38fr)] lg:gap-10">
           <div className="space-y-[34vh] pt-[9vh]">
             {leftRail.map((image, index) => (
               <div key={image.src + image.alt}>
@@ -164,7 +160,7 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
                   progress={smoothProgress}
                   shouldReduceMotion={Boolean(shouldReduceMotion)}
                   direction={index % 2 === 0 ? 1 : -1}
-                  className={index % 2 === 0 ? 'ml-0 max-w-[160px]' : 'ml-10 max-w-[140px]'}
+                  className={index % 2 === 0 ? 'ml-0 max-w-[142px]' : 'ml-8 max-w-[126px]'}
                 />
               </div>
             ))}
@@ -174,14 +170,15 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
             <div
               ref={centerRailRef}
               style={centerRailStyle}
-              className="z-30 flex h-screen items-start justify-center bg-transparent pt-[12vh]"
+              className="z-30 flex h-screen items-start justify-center bg-transparent pt-[14vh]"
             >
-              <div className="mx-auto text-center">
-                <h2 className="font-display text-[clamp(2.6rem,3.9vw,4.1rem)] leading-[1.08] tracking-[-0.016em] text-[#b88f77]">
+              <div className="mx-auto max-w-[980px] text-center">
+                <h2 className="font-display text-[clamp(4.8rem,8.1vw,7.9rem)] leading-[0.9] tracking-[-0.055em] text-[#c89b80]">
                   <span className="block whitespace-nowrap">Two are better than one,</span>
                   <span className="block whitespace-nowrap">for they have a good</span>
                   <span className="block whitespace-nowrap">return for their labor</span>
                 </h2>
+                <p className="mt-8 text-[11px] uppercase tracking-[0.38em] text-white/32">Ecclesiastes 4:9</p>
               </div>
             </div>
           </div>
@@ -194,28 +191,28 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
                   progress={smoothProgress}
                   shouldReduceMotion={Boolean(shouldReduceMotion)}
                   direction={index % 2 === 0 ? -1 : 1}
-                  className={index % 2 === 0 ? 'mr-8 ml-auto max-w-[140px]' : 'mr-0 ml-auto max-w-[160px]'}
+                  className={index % 2 === 0 ? 'mr-6 ml-auto max-w-[126px]' : 'mr-0 ml-auto max-w-[142px]'}
                 />
               </div>
             ))}
           </div>
         </div>
 
-        <div className="md:hidden">
-          <div className="sticky top-0 z-50 w-full px-2 py-4 bg-black/90">
-            <h2 className="text-center font-display text-[2.25rem] leading-[0.96] tracking-[-0.025em] text-[#b88f77]">
+        <div className="grid grid-cols-[43%_57%] items-start gap-4 md:hidden">
+          <div className="sticky top-0 z-30 self-start bg-black/90 px-2 py-4">
+            <h2 className="font-display text-[2.9rem] leading-[0.92] tracking-[-0.05em] text-[#c89b80]">
               Two are better than one,
               <br />
               for they have a good
               <br />
               return for their labor
             </h2>
-            <p className="mx-auto mt-3 max-w-[22ch] text-center text-[10px] uppercase tracking-[0.36em] text-white/38">
+            <p className="mt-3 max-w-[18ch] text-[10px] uppercase tracking-[0.36em] text-white/38">
               Ecclesiastes 4:9
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             {leftRail.concat(rightRail).map((image, index) => (
               <div key={`${image.src}-${index}`}>
                 <RailImageCard
@@ -223,7 +220,7 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
                   progress={smoothProgress}
                   shouldReduceMotion={Boolean(shouldReduceMotion)}
                   direction={index % 2 === 0 ? 1 : -1}
-                  className={index % 3 === 0 ? 'mt-8' : ''}
+                  className={index % 3 === 0 ? 'mt-6' : ''}
                 />
               </div>
             ))}

@@ -17,7 +17,6 @@ type UseSectionParallaxOptions = {
   scale?: [number, number];
   rotate?: [number, number];
   opacity?: [number, number];
-  spring?: SpringOptions;
 };
 
 const defaultSpring: SpringOptions = {
@@ -33,7 +32,6 @@ export function useSectionParallax<T extends HTMLElement>({
   scale = [1, 1],
   rotate = [0, 0],
   opacity,
-  spring = defaultSpring,
 }: UseSectionParallaxOptions = {}) {
   const ref = useRef<T | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -63,18 +61,12 @@ export function useSectionParallax<T extends HTMLElement>({
       : opacity
     : undefined;
 
-  const yValue = useSpring(useTransform(scrollYProgress, [0, 1], safeY), spring);
-  const xValue = useSpring(useTransform(scrollYProgress, [0, 1], safeX), spring);
-  const scaleValue = useSpring(
-    useTransform(scrollYProgress, [0, 1], safeScale),
-    spring,
-  );
-  const rotateValue = useSpring(
-    useTransform(scrollYProgress, [0, 1], safeRotate),
-    spring,
-  );
+  const yValue = useTransform(scrollYProgress, [0, 1], safeY);
+  const xValue = useTransform(scrollYProgress, [0, 1], safeX);
+  const scaleValue = useTransform(scrollYProgress, [0, 1], safeScale);
+  const rotateValue = useTransform(scrollYProgress, [0, 1], safeRotate);
   const opacityValue = safeOpacity
-    ? useSpring(useTransform(scrollYProgress, [0, 1], safeOpacity), spring)
+    ? useTransform(scrollYProgress, [0, 1], safeOpacity)
     : undefined;
 
   const style: MotionStyle = {

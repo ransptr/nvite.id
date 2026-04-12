@@ -8,11 +8,8 @@ import {
   ExternalLink,
   Globe,
   Instagram,
-  Menu,
+  Mail,
   MessageCircle,
-  Music2,
-  PauseCircle,
-  PlayCircle,
   Volume2,
   VolumeX,
   X,
@@ -30,7 +27,7 @@ import {Modal} from '@/src/components/shared/Modal';
 import {ParallaxImage} from '@/src/components/shared/ParallaxImage';
 import {RevealOnScroll} from '@/src/components/shared/RevealOnScroll';
 import {buildCalendarDataUrl} from '@/src/lib/calendar';
-import {createQrValue, getGuestNameFromSearch} from '@/src/lib/guest';
+import {getGuestNameFromSearch} from '@/src/lib/guest';
 import {cn} from '@/src/lib/utils';
 import type {GiftAccount, InvitationConfig} from '@/src/types/invitation';
 
@@ -50,6 +47,7 @@ type InvitationPageProps = {
 
 export function InvitationPage({invitation}: InvitationPageProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
   const [stage, setStage] = useState<'loading' | 'cover' | 'open'>('loading');
   const [loaderProgress, setLoaderProgress] = useState(0);
@@ -77,11 +75,6 @@ export function InvitationPage({invitation}: InvitationPageProps) {
   const giftSection = useSectionParallax<HTMLElement>({y: [-48, 56]});
   const heroPointer = usePointerParallax({strength: 24, rotate: 6});
 
-  const heroOverlay = useTransform(
-    heroSection.progress,
-    [0, 0.18, 1],
-    shouldReduceMotion ? [0.52, 0.52, 0.52] : [0.14, 0.52, 0.84],
-  );
   const heroContentY = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-12, 58]);
   const heroOpacity = useTransform(
     heroSection.progress,
@@ -89,6 +82,7 @@ export function InvitationPage({invitation}: InvitationPageProps) {
     shouldReduceMotion ? [1, 1, 1] : [1, 0.82, 0.2],
   );
   const heroFadeOut = useTransform(heroSection.progress, [0.3, 1], [1, 0]);
+  const heroBlackFade = useTransform(heroSection.progress, [0.58, 1], shouldReduceMotion ? [0.72, 0.72] : [0, 1]);
   const heroMarqueeNear = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-10, 62]);
   const heroScriptureY = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [0, 34]);
   const storyTitleY = useTransform(storyIntroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-20, 52]);
@@ -164,8 +158,6 @@ export function InvitationPage({invitation}: InvitationPageProps) {
     [invitation.countdown.calendar],
   );
 
-  const qrValue = createQrValue(invitation.slug, guestName);
-
   const openInvitation = () => {
     setStage('open');
     if (audioRef.current && isAudioEnabled) {
@@ -176,6 +168,21 @@ export function InvitationPage({invitation}: InvitationPageProps) {
   const toggleAudio = () => {
     setIsAudioEnabled((current) => !current);
   };
+
+  const playVideo = (video: HTMLVideoElement | null) => {
+    if (!video) return;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.play().catch(() => undefined);
+  };
+
+  useEffect(() => {
+    if (stage !== 'open') return;
+
+    playVideo(heroVideoRef.current);
+  }, [stage, invitation.media.heroVideo]);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
@@ -191,13 +198,13 @@ export function InvitationPage({invitation}: InvitationPageProps) {
             onOpen={openInvitation}
           />
         ) : (
-            <motion.main
-              key="invitation"
-              initial={{opacity: 0}}
-              animate={{opacity: 1}}
-              exit={{opacity: 0}}
-              className="relative overflow-x-hidden"
-            >
+          <motion.main
+            key="invitation"
+            initial={{opacity: 0}}
+            animate={{opacity: 1}}
+            exit={{opacity: 0}}
+            className="relative overflow-x-hidden"
+          >
             <motion.div
               style={{scaleX: scrollYProgress}}
               className="fixed left-0 right-0 top-0 z-[90] h-px origin-left bg-[#d8b181]"
@@ -205,53 +212,64 @@ export function InvitationPage({invitation}: InvitationPageProps) {
 
             <FloatingUi
               navOpen={navOpen}
-            onOpenNav={() => setNavOpen((current) => !current)}
+              onOpenNav={() => setNavOpen(true)}
               onToggleAudio={toggleAudio}
               audioEnabled={isAudioEnabled}
+            />
+
+            <NavigationOverlay
+              open={navOpen}
+              invitation={invitation}
+              onClose={() => setNavOpen(false)}
             />
 
             <motion.section ref={heroSection.ref} id="home" style={{opacity: heroFadeOut}} className="relative min-h-screen overflow-hidden">
               <motion.div
                 {...heroPointer.bind}
                 style={{...heroSection.style, ...heroPointer.style}}
-                className="absolute inset-0"
+                className="absolute inset-0 z-0"
               >
                 <video
+                  ref={heroVideoRef}
                   className="absolute inset-0 h-full w-full object-cover"
                   autoPlay
                   muted
                   loop
                   playsInline
+                  preload="auto"
                   poster={invitation.media.heroPoster}
                   src={invitation.media.heroVideo}
+                  onLoadedData={(event) => playVideo(event.currentTarget)}
+                  onCanPlay={(event) => playVideo(event.currentTarget)}
                 />
               </motion.div>
               <motion.div
-                style={{opacity: heroOverlay}}
-                className="absolute inset-0 bg-black"
+                style={{opacity: heroBlackFade}}
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[42vh] bg-gradient-to-b from-transparent via-black/72 to-black"
               />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_22%,rgba(255,255,255,0.08),transparent_42%),linear-gradient(to_bottom,rgba(0,0,0,0.26),rgba(0,0,0,0.88))]" />
 
-              <div className="absolute inset-x-0 top-0 z-20">
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between px-5 py-8 md:px-10 md:py-7">
-          <span className="text-[14px] md:text-[25px] text-[#FFFFFF]">{invitation.couple.coverLabel}</span>
-          <span className="text-[14px] md:text-[25px] text-[#FFFFFF]">{invitation.couple.dateLabel}</span>
-        </div>
+              <div className="absolute inset-x-0 top-0 z-40">
+                <div className="mx-auto flex max-w-[1440px] items-center justify-between px-5 pt-12 pb-6 md:px-10 md:pt-11 md:pb-7">
+                  <span className="text-[14px] md:text-[25px] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.38)]">{invitation.couple.coverLabel}</span>
+                  <span className="text-[14px] md:text-[25px] text-white [text-shadow:0_2px_16px_rgba(0,0,0,0.38)]">{invitation.couple.dateLabel}</span>
+                </div>
               </div>
 
-              <motion.div style={{y: heroMarqueeNear, opacity: heroOpacity}} className="absolute inset-x-0 top-[13vh] z-20 px-4 md:px-0">
-                <Marquee text={invitation.couple.joinedName} className="hero-marquee text-white/60" />
+              <motion.div style={{y: heroMarqueeNear, opacity: heroOpacity}} className="absolute inset-x-0 top-[13vh] z-40 px-4 md:px-0">
+                <div className="[text-shadow:0_2px_20px_rgba(0,0,0,0.42)]">
+                  <Marquee text={invitation.couple.joinedName} className="hero-marquee text-white" />
+                </div>
               </motion.div>
 
               <motion.div
                 style={{y: heroContentY, opacity: heroOpacity}}
-                className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1440px] px-5 pt-[35vh] md:px-10 md:pt-[34vh]"
+                className="relative z-40 mx-auto flex min-h-screen w-full max-w-[1440px] px-5 pt-[35vh] md:px-10 md:pt-[34vh]"
               >
                 <RevealOnScroll className="max-w-[25rem] md:max-w-[31rem]">
-                  <motion.p style={{y: heroScriptureY}} className="font-copy text-sm leading-relaxed text-[#FFFFFF] md:text-[1.5rem] md:leading-[1.45]">
+                  <motion.p style={{y: heroScriptureY}} className="font-copy text-sm leading-relaxed text-white [text-shadow:0_3px_20px_rgba(0,0,0,0.42)] md:text-[1.5rem] md:leading-[1.45]">
                     &ldquo;{invitation.couple.scripture.text}&rdquo;
                   </motion.p>
-                  <p className="mt-4 text-[12px] uppercase tracking-[0.01em] text-white/42 md:mt-5">
+                  <p className="mt-4 text-[12px] uppercase tracking-[0.01em] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.42)] md:mt-5">
                     {invitation.couple.scripture.citation}
                   </p>
                 </RevealOnScroll>
@@ -444,34 +462,6 @@ export function InvitationPage({invitation}: InvitationPageProps) {
 
             <ThankYouSection invitation={invitation} />
 
-            <Modal open={navOpen} onClose={() => setNavOpen(false)} title="Navigate">
-              <div className="grid gap-6 p-6 md:grid-cols-2 md:p-10">
-                <div className="space-y-3">
-                  {NAV_ITEMS.map((item) => (
-                    <a
-                      key={item.id}
-                      href={`#${item.id}`}
-                      onClick={() => setNavOpen(false)}
-                      className="flex items-center justify-between rounded-[1.5rem] border border-white/8 px-5 py-4 text-xl text-white/75 transition hover:border-white/16 hover:bg-white/[0.04] hover:text-white"
-                    >
-                      {item.label}
-                      <ArrowRight className="h-5 w-5" />
-                    </a>
-                  ))}
-                </div>
-                <div className="rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-6">
-                  <p className="text-[10px] uppercase tracking-[0.35em] text-white/45">Quick note</p>
-                  <p className="mt-5 max-w-md text-lg leading-relaxed text-white/76">
-                    Please click one of the menu options above to navigate directly to your desired section.
-                  </p>
-                  <div className="mt-10 rounded-[1.5rem] border border-white/8 bg-black/30 p-5">
-                    <p className="text-[10px] uppercase tracking-[0.35em] text-white/45">Check-in code</p>
-                    <p className="mt-4 font-display text-4xl italic text-white">{qrValue}</p>
-                  </div>
-                </div>
-              </div>
-            </Modal>
-
             <Modal open={giftOpen} onClose={() => setGiftOpen(false)} title="Bank Account">
               <div className="grid gap-4 p-6 md:grid-cols-3 md:p-10">
                 {invitation.gift.accounts.map((account) => (
@@ -543,10 +533,21 @@ function CoverScreen({
   onOpen: () => void;
 }) {
   const coverParallax = useSectionParallax<HTMLElement>({
-    y: [-40, 60],
-    scale: [1.08, 1.02],
+    y: [-24, 34],
+    scale: [1.04, 1.01],
   });
-  const coverPointer = usePointerParallax({strength: 18, rotate: 5});
+  const coverPointer = usePointerParallax({strength: 12, rotate: 3.5});
+  const coverVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = coverVideoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.play().catch(() => undefined);
+  }, [invitation.media.heroVideo]);
 
   return (
     <motion.section
@@ -562,46 +563,53 @@ function CoverScreen({
         style={{...coverParallax.style, ...coverPointer.style}}
         className="absolute inset-0"
       >
-        <img
-          src={invitation.media.coverImage}
-          alt="Invitation cover"
-          className="h-full w-full object-cover"
-          referrerPolicy="no-referrer"
+        <video
+          ref={coverVideoRef}
+          className="h-full w-full object-cover saturate-[0.88] brightness-[0.94]"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster={invitation.media.heroPoster}
+          src={invitation.media.heroVideo}
+          onLoadedData={(event) => event.currentTarget.play().catch(() => undefined)}
+          onCanPlay={(event) => event.currentTarget.play().catch(() => undefined)}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_35%),linear-gradient(to_bottom,rgba(0,0,0,0.2),rgba(0,0,0,0.84))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(241,238,233,0.16),rgba(20,17,13,0.03)_26%,rgba(20,17,13,0.24)_100%)]" />
       </motion.div>
 
-      <div className="relative z-10 flex min-h-screen flex-col justify-between px-6 py-8 text-white md:px-10 md:py-10">
-        <div className="flex items-center justify-between text-[12px] uppercase tracking-[0.02em] text-white/52">
-          <span>{invitation.couple.coverLabel}</span>
-          <span>{invitation.couple.dateLabel}</span>
-        </div>
-
-        <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center text-center">
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-8 text-white md:px-10 md:py-10">
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center text-center">
           <RevealOnScroll>
-            <h1 className="font-display text-[17vw] italic leading-[0.88] tracking-[-0.06em] text-white md:text-[10rem] lg:text-[12rem]">
+            <p className="text-[11px] tracking-[0.01em] text-white/94 md:text-[1.05rem]">The Wedding of</p>
+          </RevealOnScroll>
+          <RevealOnScroll delay={0.04}>
+            <h1 className="mt-2 font-display text-[13vw] italic leading-[0.9] tracking-[-0.055em] text-white [text-shadow:0_10px_26px_rgba(0,0,0,0.18)] md:text-[5rem] lg:text-[5.5rem]">
               {invitation.couple.joinedName}
             </h1>
           </RevealOnScroll>
-          <RevealOnScroll delay={0.08} className="mt-8 max-w-xl border border-white/12 bg-black/20 px-6 py-5 backdrop-blur-md">
-            <p className="text-[11px] uppercase tracking-[0.35em] text-white/55">Dear</p>
-            <p className="mt-3 font-display text-4xl italic md:text-5xl">{guestName}</p>
+          <RevealOnScroll delay={0.08}>
+            <p className="mt-5 text-[10px] uppercase tracking-[0.24em] text-white/92 md:mt-4 md:text-[11px]">
+              {invitation.couple.dateLabel.toUpperCase()}
+            </p>
+          </RevealOnScroll>
+          <RevealOnScroll delay={0.12}>
+            <p className="mt-4 text-[10px] uppercase tracking-[0.28em] text-white/82 md:text-[11px]">
+              {guestName}
+            </p>
           </RevealOnScroll>
           <RevealOnScroll delay={0.16}>
             <button
               type="button"
               onClick={onOpen}
-              className="mt-10 inline-flex items-center gap-3 border border-white/16 bg-black/22 px-7 py-3 text-[10px] uppercase tracking-[0.34em] text-white transition hover:bg-white hover:text-black"
+              className="mt-7 inline-flex items-center gap-2.5 bg-[#101010] px-5 py-3 text-[10px] uppercase tracking-[0.2em] text-white shadow-[0_16px_40px_rgba(0,0,0,0.22)] transition hover:bg-black md:mt-8"
             >
-              <PlayCircle className="h-4 w-4" />
+              <Mail className="h-3.5 w-3.5" />
               Let&apos;s Open
             </button>
           </RevealOnScroll>
         </div>
-
-        <p className="text-[10px] uppercase tracking-[0.3em] text-white/38">
-          Loading the invitation experience.
-        </p>
       </div>
     </motion.section>
   );
@@ -614,49 +622,67 @@ function FakeLoader({
   invitation: InvitationConfig;
   progress: number;
 }) {
-  const loaderParallax = useSectionParallax<HTMLElement>({
-    y: [-30, 30],
-    scale: [1.04, 1.01],
-  });
-  const loaderImageY = useTransform(loaderParallax.progress, [0, 1], loaderParallax.shouldReduceMotion ? [0, 0] : [-18, 20]);
-  const loaderTextY = useTransform(loaderParallax.progress, [0, 1], loaderParallax.shouldReduceMotion ? [0, 0] : [14, -12]);
+  const burstImages = invitation.media.gallery.length
+    ? invitation.media.gallery.slice(0, 6)
+    : [invitation.media.coverImage];
+  const burstIndex = Math.floor(progress / 4) % burstImages.length;
+  const activeBurstImage = burstImages[burstIndex];
 
   return (
     <motion.section
-      ref={loaderParallax.ref}
       key="loader"
       initial={{opacity: 1}}
       exit={{opacity: 0, scale: 1.02}}
       transition={{duration: 0.55, ease: [0.22, 1, 0.36, 1]}}
-      className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden bg-[#f2eee8] text-[#111]"
+      className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden bg-[#f5f4f1] text-[#222]"
     >
-      <motion.div style={loaderParallax.style} className="flex items-center gap-8 md:gap-16">
-        <motion.span style={{y: loaderTextY}} className="text-[10px] uppercase tracking-[0.3em] text-black/55">
+      <div className="flex w-full max-w-[940px] items-center justify-center gap-8 px-8 md:gap-16 md:px-12">
+        <motion.span
+          initial={{opacity: 0, x: -18}}
+          animate={{opacity: 1, x: 0}}
+          transition={{duration: 0.55, ease: [0.22, 1, 0.36, 1]}}
+          className="text-[10px] uppercase tracking-[0.3em] text-black/68"
+        >
           {invitation.couple.coverLabel}
         </motion.span>
-        <motion.div style={{y: loaderImageY}} className="h-16 w-16 overflow-hidden rounded-sm md:h-20 md:w-20">
-          <img
-            src={invitation.media.coverImage}
-            alt="Loader preview"
-            className="h-full w-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        </motion.div>
-        <motion.span style={{y: loaderTextY}} className="text-[10px] uppercase tracking-[0.3em] text-black/55">
-          {invitation.couple.joinedName}
-        </motion.span>
-      </motion.div>
-
-      <div className="absolute bottom-10 left-6 right-6 flex items-end justify-between gap-6 md:left-10 md:right-10">
-        <div className="w-full max-w-xs overflow-hidden rounded-full bg-black/8">
-          <motion.div
-            animate={{width: `${Math.min(progress, 100)}%`}}
-            transition={{duration: 0.3, ease: 'easeOut'}}
-            className="h-[2px] bg-black/70"
-          />
+        <div className="relative h-[88px] w-[72px] overflow-hidden shadow-[0_18px_36px_rgba(0,0,0,0.12)] md:h-[108px] md:w-[84px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeBurstImage}
+              initial={{opacity: 0, scale: 0.82, filter: 'blur(10px) brightness(1.38)'}}
+              animate={{opacity: 1, scale: 1, filter: 'blur(0px) brightness(1)'}}
+              exit={{opacity: 0, scale: 1.05, filter: 'blur(6px) brightness(1.18)'}}
+              transition={{duration: 0.14, ease: [0.22, 1, 0.36, 1]}}
+              className="absolute inset-0"
+            >
+              <img
+                src={activeBurstImage}
+                alt="Loader preview"
+                className="h-full w-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+              <motion.div
+                initial={{opacity: 0}}
+                animate={{opacity: [0, 0.9, 0]}}
+                transition={{duration: 0.14, times: [0, 0.3, 1], ease: 'easeOut'}}
+                className="absolute inset-0 bg-white mix-blend-screen"
+              />
+            </motion.div>
+          </AnimatePresence>
         </div>
-        <p className="shrink-0 text-[10px] uppercase tracking-[0.24em] text-black/45">
-          Loading... {Math.round(Math.min(progress, 100))}%
+        <motion.span
+          initial={{opacity: 0, x: 18}}
+          animate={{opacity: 1, x: 0}}
+          transition={{duration: 0.55, delay: 0.05, ease: [0.22, 1, 0.36, 1]}}
+          className="text-[10px] uppercase tracking-[0.3em] text-black/68"
+        >
+          {invitation.couple.joinedName.toUpperCase()}
+        </motion.span>
+      </div>
+
+      <div className="absolute bottom-8 left-6 md:bottom-10 md:left-9">
+        <p className="text-sm text-black/78 md:text-base">
+          LOADING... {Math.round(Math.min(progress, 100))}%
         </p>
       </div>
     </motion.section>
@@ -676,25 +702,130 @@ function FloatingUi({
 }) {
   return (
     <>
-      <button
-        type="button"
-        onClick={onOpenNav}
-        className="fixed right-5 top-5 z-[95] flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/30 text-white backdrop-blur-md transition hover:border-white/22 hover:bg-white hover:text-black md:right-8 md:top-8"
-        aria-expanded={navOpen}
-        aria-label="Open navigation"
-      >
-        {navOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
+      {!navOpen ? (
+        <button
+          type="button"
+          onClick={onOpenNav}
+          className="fixed right-5 top-8 z-[95] flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/30 text-white backdrop-blur-md transition hover:border-white/22 hover:bg-white hover:text-black md:right-8 md:top-10"
+          aria-expanded={navOpen}
+          aria-label="Open navigation"
+        >
+          <span className="flex flex-col gap-[5px]">
+            <span className="block h-[1.5px] w-5 bg-current" />
+            <span className="block h-[1.5px] w-5 bg-current" />
+          </span>
+        </button>
+      ) : null}
 
       <button
         type="button"
         onClick={onToggleAudio}
-        className="fixed bottom-5 left-5 z-[95] flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/30 text-white backdrop-blur-md transition hover:border-white/22 hover:bg-white hover:text-black md:bottom-8 md:left-8"
+        className="fixed bottom-5 left-5 z-[118] flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/30 text-white backdrop-blur-md transition hover:border-white/22 hover:bg-white hover:text-black md:bottom-8 md:left-8"
         aria-label={audioEnabled ? 'Mute invitation audio' : 'Play invitation audio'}
       >
         {audioEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
       </button>
     </>
+  );
+}
+
+function NavigationOverlay({
+  open,
+  invitation,
+  onClose,
+}: {
+  open: boolean;
+  invitation: InvitationConfig;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onClose, open]);
+
+  const previewImage = invitation.media.gallery[1] ?? invitation.media.thankYouImage;
+
+  return (
+    <AnimatePresence>
+      {open ? (
+        <motion.aside
+          initial={{opacity: 0}}
+          animate={{opacity: 1}}
+          exit={{opacity: 0}}
+          className="fixed inset-0 z-[115] overflow-auto bg-[#f4f3f0] px-6 py-6 text-[#202020] md:px-10 md:py-8"
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            className="fixed right-5 top-5 z-[116] text-[#202020] transition hover:opacity-60 md:right-8 md:top-7"
+            aria-label="Close navigation"
+          >
+            <X className="h-10 w-10 stroke-[1.75]" />
+          </button>
+
+          <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-[1120px] items-center">
+            <div className="grid w-full items-center gap-12 md:grid-cols-[0.88fr_1.12fr] md:gap-20">
+              <motion.div
+                initial={{opacity: 0, x: -30}}
+                animate={{opacity: 1, x: 0}}
+                exit={{opacity: 0, x: -18}}
+                transition={{duration: 0.5, ease: [0.22, 1, 0.36, 1]}}
+                className="mx-auto w-full max-w-[410px]"
+              >
+                <div className="aspect-square overflow-hidden bg-[#e5e1da] shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
+                  <img
+                    src={previewImage}
+                    alt="Navigation preview"
+                    className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{opacity: 0, x: 30}}
+                animate={{opacity: 1, x: 0}}
+                exit={{opacity: 0, x: 18}}
+                transition={{duration: 0.52, delay: 0.05, ease: [0.22, 1, 0.36, 1]}}
+                className="mx-auto w-full max-w-[430px]"
+              >
+                <nav className="flex flex-col items-start gap-1">
+                  {NAV_ITEMS.map((item, index) => (
+                    <motion.a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      onClick={onClose}
+                      initial={{opacity: 0, y: 12}}
+                      animate={{opacity: 1, y: 0}}
+                      exit={{opacity: 0, y: 8}}
+                      transition={{duration: 0.42, delay: 0.08 + index * 0.04, ease: [0.22, 1, 0.36, 1]}}
+                      className="font-display text-[3rem] leading-[0.96] tracking-[-0.04em] text-[#222] transition hover:translate-x-1 hover:text-black md:text-[5rem]"
+                    >
+                      {item.label}
+                    </motion.a>
+                  ))}
+                </nav>
+
+                <p className="mt-8 max-w-[14rem] text-sm leading-relaxed text-[#9c9993] md:mt-10">
+                  Please click one of the menu options above to navigate directly to your desired page.
+                </p>
+              </motion.div>
+            </div>
+          </div>
+        </motion.aside>
+      ) : null}
+    </AnimatePresence>
   );
 }
 
@@ -909,7 +1040,7 @@ function VideoSection({
   return (
     <section className="bg-[#000000] md:h-screen">
       <div
-        className="group relative h-[56.25vw] md:h-full w-full"
+        className={cn('group relative h-[56.25vw] w-full md:h-full', hovering && !shouldReduceMotion && 'cursor-none')}
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
         onMouseMove={(event) => {
@@ -917,7 +1048,7 @@ function VideoSection({
           cursorY.set(event.clientY);
         }}
       >
-        <button type="button" onClick={onOpenVideo} className="block h-full w-full">
+        <button type="button" onClick={onOpenVideo} className="block h-full w-full cursor-none">
           <img
             src={invitation.media.videoPoster}
             alt="Wedding film poster"
@@ -1014,14 +1145,6 @@ function GallerySection({
 
   return (
     <section ref={sectionRef} id="gallery" className="bg-[#cfcfcf] px-5 py-24 text-[#111] md:px-10">
-      {/* Mobile: Full width text header */}
-      <div className="mb-12 md:hidden sticky top-0 bg-[#cfcfcf] py-4 -mx-5 px-5 z-10">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-black/45">Gallery</p>
-        <h2 className="mt-4 font-display text-4xl italic leading-[0.92]">
-          Our Pre-wedding Celebration.
-        </h2>
-      </div>
-
       <div className="mx-auto max-w-[1440px] md:grid md:grid-cols-[minmax(240px,0.68fr)_1fr] md:items-stretch md:gap-10 lg:grid-cols-[minmax(280px,0.72fr)_1fr] lg:gap-12 xl:gap-16">
         <div ref={leftColumnRef} className="hidden md:block relative mb-8 md:mb-0">
           <div
@@ -1038,9 +1161,13 @@ function GallerySection({
           </div>
         </div>
 
-        {/* Mobile: 20% left empty, 80% right for images */}
-        <div className="grid grid-cols-[20%_80%] gap-0 md:hidden">
-          <div></div>
+        <div className="grid grid-cols-[36%_64%] items-start gap-4 md:hidden">
+          <div className="sticky top-0 z-20 self-start bg-[#cfcfcf] py-4 pr-2">
+            <p className="text-[10px] uppercase tracking-[0.4em] text-black/45">Gallery</p>
+            <h2 className="mt-4 font-display text-[2.05rem] italic leading-[0.92]">
+              Our Pre-wedding Celebration.
+            </h2>
+          </div>
           <div className="space-y-8">
             {invitation.media.gallery.map((image, index) => (
               <div key={image}>
@@ -1100,7 +1227,7 @@ function ThankYouSection({invitation}: {invitation: InvitationConfig}) {
         <div className="flex flex-1 items-center justify-center py-12 md:py-16">
           <RevealOnScroll className="mx-auto flex w-full max-w-[980px] flex-col items-center text-center">
             <motion.div style={{y: textFloat}} className="flex items-end justify-center gap-3 sm:gap-5 md:gap-6">
-              <span className="font-display text-[3.3rem] font-medium leading-none tracking-[-0.04em] text-[#a9a4a0] sm:text-[4.3rem] md:text-[5.6rem] lg:text-[6.5rem]">
+              <span className="font-display text-[1.65rem] font-medium leading-none tracking-[-0.04em] text-[#a9a4a0] sm:text-[2.7rem] md:text-[3.6rem] lg:text-[4.4rem]">
                 {invitation.footer.closingTitle[0]}
               </span>
               <motion.div
@@ -1114,17 +1241,17 @@ function ThankYouSection({invitation}: {invitation: InvitationConfig}) {
                   referrerPolicy="no-referrer"
                 />
               </motion.div>
-              <span className="font-display text-[3.3rem] italic leading-none tracking-[-0.04em] text-[#a9a4a0] sm:text-[4.3rem] md:text-[5.6rem] lg:text-[6.5rem]">
+              <span className="font-display text-[1.65rem] italic leading-none tracking-[-0.04em] text-[#a9a4a0] sm:text-[2.7rem] md:text-[3.6rem] lg:text-[4.4rem]">
                 {invitation.footer.closingTitle[1]}
               </span>
             </motion.div>
 
-            <motion.p
-              style={{y: textFloat}}
-              className="mt-6 max-w-[860px] font-display text-[2.1rem] leading-[1.04] tracking-[-0.02em] text-[#a9a4a0] sm:mt-7 sm:text-[2.6rem] md:text-[3.5rem] lg:text-[4.15rem]"
-            >
-              {invitation.footer.closingText}
-            </motion.p>
+              <motion.p
+                style={{y: textFloat}}
+               className="mt-6 max-w-[720px] font-display text-[1.35rem] leading-[1.08] tracking-[-0.02em] text-[#a9a4a0] sm:mt-7 sm:text-[1.6rem] md:text-[2.1rem] lg:text-[2.4rem]"
+              >
+                {invitation.footer.closingText}
+              </motion.p>
 
             <motion.p style={{y: textFloat}} className="mt-5 text-[10px] uppercase tracking-[0.28em] text-[#8a8580] md:mt-6 md:text-[11px]">
               {guestPairLabel}
