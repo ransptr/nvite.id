@@ -9,9 +9,10 @@ import {
 } from '@/src/components/shared/CinematicParallax';
 import {RevealOnScroll} from '@/src/components/shared/RevealOnScroll';
 import {createQrValue, getQrPreviewUrl} from '@/src/lib/guest';
+import {supabase} from '@/src/lib/supabase';
 import {cn} from '@/src/lib/utils';
 import type {InvitationConfig} from '@/src/types/invitation';
-import type {AttendanceStatus, RsvpPayload, RsvpRecord} from '@/src/types/rsvp';
+import type {AttendanceStatus, RsvpRecord} from '@/src/types/rsvp';
 
 type RsvpSectionProps = {
   invitation: InvitationConfig;
@@ -33,6 +34,7 @@ export function RsvpSection({
   const [guestCount, setGuestCount] = useState(1);
   const [wishes, setWishes] = useState('');
   const [records, setRecords] = useState<RsvpRecord[]>([]);
+  const [invitationDbId, setInvitationDbId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -58,26 +60,40 @@ export function RsvpSection({
   useEffect(() => {
     let active = true;
 
-    fetch(`/api/rsvps?slug=${encodeURIComponent(invitation.slug)}`)
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error('Unable to load existing wishes.');
-        }
+    // First resolve the invitation's DB id from its slug, then load RSVPs
+    const load = async () => {
+      try {
+        const {data: invData} = await supabase
+          .from('invitations')
+          .select('id')
+          .eq('slug', invitation.slug)
+          .eq('is_published', true)
+          .maybeSingle();
 
-        return response.json() as Promise<{items?: RsvpRecord[]}>;
-      })
-      .then((payload) => {
-        if (active) {
-          setRecords(Array.isArray(payload.items) ? payload.items : []);
-          setLoadError(null);
+        if (!active || !invData) return;
+        const dbId = invData.id as string;
+        if (active) setInvitationDbId(dbId);
+
+        const res = await supabase
+          .from('rsvps')
+          .select('*')
+          .eq('invitation_id', dbId)
+          .order('created_at', {ascending: false});
+
+        if (!active) return;
+        if (res.error) {
+          setLoadError('Unable to load wishes right now. You can still send your RSVP.');
+        } else {
+          setRecords((res.data ?? []) as RsvpRecord[]);
         }
-      })
-      .catch(() => {
+      } catch {
         if (active) {
           setRecords([]);
           setLoadError('Unable to load wishes right now. You can still send your RSVP.');
         }
-      });
+      }
+    };
+    void load();
 
     return () => {
       active = false;
@@ -93,39 +109,39 @@ export function RsvpSection({
     setIsSubmitting(true);
     setSubmitMessage(null);
 
-    const payload: RsvpPayload = {
-      invitationSlug: invitation.slug,
-      guestName: guestName.trim(),
-      attendance,
-      guestCount: attendance === 'attending' ? guestCount : 0,
-      wishes: wishes.trim(),
-    };
+    if (!invitationDbId) {
+      setSubmitMessage('Unable to submit RSVP right now. Please try again in a moment.');
+      setIsSubmitting(false);
+      return;
+    }
 
-    try {
-      const response = await fetch('/api/rsvps', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+    const qrValue = createQrValue(invitation.slug, guestName.trim());
 
-      if (!response.ok) {
-        throw new Error('Unable to save RSVP.');
-      }
+    const {data, error} = await supabase
+      .from('rsvps')
+      .insert({
+        invitation_id: invitationDbId,
+        guest_name: guestName.trim(),
+        attendance,
+        guest_count: attendance === 'attending' ? guestCount : 0,
+        wishes: wishes.trim(),
+        qr_value: qrValue,
+      })
+      .select()
+      .single();
 
-      const next = (await response.json()) as {record: RsvpRecord};
-      setRecords((current) => [next.record, ...current]);
+    if (error) {
+      setSubmitMessage('We could not submit your RSVP. Please try again in a moment.');
+    } else {
+      setRecords((current) => [data as RsvpRecord, ...current]);
       setPage(0);
       setSubmitMessage('Your RSVP has been recorded. Thank you for celebrating with us.');
       setWishes('');
       setAttendance('attending');
       setGuestCount(1);
-    } catch {
-      setSubmitMessage('We could not submit your RSVP. Please try again in a moment.');
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setIsSubmitting(false);
   };
 
   return (
@@ -200,7 +216,7 @@ export function RsvpSection({
                   <div role="radiogroup" aria-label="Attendance" className="grid gap-3 sm:grid-cols-2">
                     {[
                       {label: 'Excited to Attend', value: 'attending' as const},
-                      {label: 'Unable to Attend', value: 'unable' as const},
+                      {label: 'Unable to Attend', value: 'not_attending' as const},
                     ].map((option) => {
                       const active = attendance === option.value;
                       return (
@@ -311,9 +327,9 @@ export function RsvpSection({
                 className="space-y-3 pb-6 border-b border-white/10"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <strong className="font-copy text-base font-medium text-white">{record.guestName}</strong>
+                  <strong className="font-copy text-base font-medium text-white">{record.guest_name}</strong>
                   <small className="shrink-0 text-[10px] uppercase tracking-[0.24em] text-white/40">
-                    {new Date(record.createdAt).toLocaleDateString('en-GB', {
+                    {new Date(record.created_at).toLocaleDateString('en-GB', {
                       day: '2-digit',
                       month: 'short',
                       year: 'numeric',

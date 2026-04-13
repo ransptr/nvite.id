@@ -1,22 +1,23 @@
-export type AttendanceStatus = 'attending' | 'unable';
+export type AttendanceStatus = 'attending' | 'not_attending';
 
 export type RsvpRecord = {
   id: string;
-  invitationSlug: string;
-  guestName: string;
+  invitation_id: string;
+  guest_name: string;
   attendance: AttendanceStatus;
-  guestCount: number;
-  wishes: string;
-  qrValue: string;
-  createdAt: string;
+  guest_count: number;
+  wishes: string | null;
+  qr_value: string | null;
+  created_at: string;
 };
 
 export type RsvpPayload = {
-  invitationSlug: string;
-  guestName: string;
+  invitation_id: string;
+  guest_name: string;
   attendance: AttendanceStatus;
-  guestCount: number;
+  guest_count: number;
   wishes: string;
+  qr_value: string;
 };
 
 export type RsvpStore = {
