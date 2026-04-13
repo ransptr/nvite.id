@@ -14,9 +14,18 @@
     background: #050505;
   }
 
+  /* Landing page overrides the dark default */
+  html:has(.landing-page) {
+    background: #fdfaf6;
+  }
+
   body {
     @apply overflow-x-hidden bg-[#050505] text-[#f6f0ea] antialiased;
     font-family: var(--font-copy);
+  }
+
+  body:has(.landing-page) {
+    @apply bg-[#fdfaf6] text-[#1a1410];
   }
 
   h1,

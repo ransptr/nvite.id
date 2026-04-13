@@ -133,9 +133,8 @@ async function startServer() {
 
   // Vite middleware for development
   const vite = await createViteServer({
-    server: { 
+    server: {
       middlewareMode: true,
-      hmr: false // Disable HMR to avoid websocket connection issues in some browsers
     },
     appType: 'spa',
   });

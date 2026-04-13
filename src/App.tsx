@@ -1,9 +1,13 @@
+import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {InvitationPage} from '@/src/components/invitation/InvitationPage';
+import {LandingPage} from '@/src/pages/LandingPage';
 import {getInvitationBySlug} from '@/src/data/invitations';
-import {getSlugFromPathname} from '@/src/lib/guest';
 
-export default function App() {
-  const invitation = getInvitationBySlug(getSlugFromPathname(window.location.pathname));
+function InvitationRoute() {
+  // React Router guarantees :slug exists on this path, so the split/filter
+  // approach from the old manual routing still works fine here.
+  const slug = window.location.pathname.split('/').filter(Boolean)[0] ?? '';
+  const invitation = getInvitationBySlug(slug);
 
   if (!invitation) {
     return (
@@ -20,4 +24,15 @@ export default function App() {
   }
 
   return <InvitationPage invitation={invitation} />;
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/:slug" element={<InvitationRoute />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }

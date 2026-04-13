@@ -66,7 +66,7 @@ export function RsvpSection({
 
         return response.json() as Promise<{items?: RsvpRecord[]}>;
       })
-      .then((payload: {items: RsvpRecord[]}) => {
+      .then((payload) => {
         if (active) {
           setRecords(Array.isArray(payload.items) ? payload.items : []);
           setLoadError(null);
