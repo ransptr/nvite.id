@@ -199,17 +199,19 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
         </div>
 
         <div className="grid grid-cols-[43%_57%] items-start gap-4 md:hidden">
-          <div className="sticky top-0 z-30 self-start bg-black/90 px-2 py-4">
-            <h2 className="font-display text-[2.9rem] leading-[0.92] tracking-[-0.05em] text-[#c89b80]">
-              Two are better than one,
-              <br />
-              for they have a good
-              <br />
-              return for their labor
-            </h2>
-            <p className="mt-3 max-w-[18ch] text-[10px] uppercase tracking-[0.36em] text-white/38">
-              Ecclesiastes 4:9
-            </p>
+          <div className="sticky top-0 z-40 h-screen self-start bg-black px-2 py-4">
+            <div className="pt-1">
+              <h2 className="font-display text-[2.9rem] leading-[0.92] tracking-[-0.05em] text-[#c89b80]">
+                Two are better than one,
+                <br />
+                for they have a good
+                <br />
+                return for their labor
+              </h2>
+              <p className="mt-3 max-w-[18ch] text-[10px] uppercase tracking-[0.36em] text-white/38">
+                Ecclesiastes 4:9
+              </p>
+            </div>
           </div>
 
           <div className="space-y-4">

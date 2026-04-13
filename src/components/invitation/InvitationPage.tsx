@@ -56,6 +56,7 @@ export function InvitationPage({invitation}: InvitationPageProps) {
   const [videoOpen, setVideoOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [storyScaleHydrated, setStoryScaleHydrated] = useState(false);
   const [storyIndex, setStoryIndex] = useState(0);
   const [guestName, setGuestName] = useState('Guest Name');
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
@@ -87,6 +88,11 @@ export function InvitationPage({invitation}: InvitationPageProps) {
   const heroScriptureY = useTransform(heroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [0, 34]);
   const storyTitleY = useTransform(storyIntroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-20, 52]);
   const storyBackdropY = useTransform(storyIntroSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-100, 110]);
+  const {scrollYProgress: storyImageProgress} = useScroll({
+    target: storyScaleHydrated ? storyIntroSection.ref : undefined,
+    offset: ['start 120%', 'start 0%'] as any,
+  });
+  const storyImageScale = useTransform(storyImageProgress, [0, 1], shouldReduceMotion ? [1, 1] : [0.8, 1]);
   const countdownMarqueeY = useTransform(countdownSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-24, 28]);
   const countdownTextY = useTransform(countdownSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-20, 36]);
   const eventsHeadingY = useTransform(eventsSection.progress, [0, 1], shouldReduceMotion ? [0, 0] : [-20, 44]);
@@ -95,6 +101,12 @@ export function InvitationPage({invitation}: InvitationPageProps) {
   useEffect(() => {
     setGuestName(getGuestNameFromSearch(window.location.search, invitation.guestQueryParam));
   }, [invitation.guestQueryParam]);
+
+  useEffect(() => {
+    if (!storyScaleHydrated && storyIntroSection.ref.current) {
+      setStoryScaleHydrated(true);
+    }
+  }, [storyScaleHydrated, storyIntroSection.ref]);
 
   useEffect(() => {
     if (stage !== 'loading') return;
@@ -288,25 +300,30 @@ export function InvitationPage({invitation}: InvitationPageProps) {
             <section ref={storyIntroSection.ref} id="lovestory" className="relative md:min-h-screen overflow-hidden bg-[#000000]">
               {/* Mobile: Landscape image with title overlay */}
               <div className="relative h-[56.25vw] w-full md:hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentStoryImage}
-                    initial={{opacity: 0.35, scale: 1.04}}
-                    animate={{opacity: 1, scale: 1}}
-                    exit={{opacity: 0.35, scale: 1.02}}
-                    style={{y: storyBackdropY}}
-                    transition={{duration: 1.4, ease: [0.22, 1, 0.36, 1]}}
-                    className="absolute inset-0"
-                  >
-                    <img
-                      src={currentStoryImage}
-                      alt="Love story backdrop"
-                      className="h-full w-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-black/55" />
-                  </motion.div>
-                </AnimatePresence>
+                <motion.div
+                  style={{scale: storyImageScale}}
+                  className="absolute inset-0"
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStoryImage}
+                      initial={{opacity: 0.35, scale: 1.04}}
+                      animate={{opacity: 1, scale: 1}}
+                      exit={{opacity: 0.35, scale: 1.02}}
+                      style={{y: storyBackdropY}}
+                      transition={{duration: 1.4, ease: [0.22, 1, 0.36, 1]}}
+                      className="absolute inset-0"
+                    >
+                      <img
+                        src={currentStoryImage}
+                        alt="Love story backdrop"
+                        className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-black/55" />
+                    </motion.div>
+                  </AnimatePresence>
+                </motion.div>
 
                 <div className="absolute inset-0 z-10 flex items-center justify-center px-5">
                   <RevealOnScroll className="text-center">
@@ -319,25 +336,30 @@ export function InvitationPage({invitation}: InvitationPageProps) {
 
               {/* Desktop: Full screen with image */}
               <div className="hidden md:block md:h-full md:min-h-screen">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentStoryImage}
-                    initial={{opacity: 0.35, scale: 1.04}}
-                    animate={{opacity: 1, scale: 1}}
-                    exit={{opacity: 0.35, scale: 1.02}}
-                    style={{y: storyBackdropY}}
-                    transition={{duration: 1.4, ease: [0.22, 1, 0.36, 1]}}
-                    className="absolute inset-0"
-                  >
-                    <img
-                      src={currentStoryImage}
-                      alt="Love story backdrop"
-                      className="h-full w-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-black/55" />
-                  </motion.div>
-                </AnimatePresence>
+                <motion.div
+                  style={{scale: storyImageScale}}
+                  className="absolute inset-0"
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStoryImage}
+                      initial={{opacity: 0.35, scale: 1.04}}
+                      animate={{opacity: 1, scale: 1}}
+                      exit={{opacity: 0.35, scale: 1.02}}
+                      style={{y: storyBackdropY}}
+                      transition={{duration: 1.4, ease: [0.22, 1, 0.36, 1]}}
+                      className="absolute inset-0"
+                    >
+                      <img
+                        src={currentStoryImage}
+                        alt="Love story backdrop"
+                        className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-black/55" />
+                    </motion.div>
+                  </AnimatePresence>
+                </motion.div>
 
                 <div className="relative z-10 flex min-h-screen items-center justify-center px-10">
                   <RevealOnScroll className="text-center">
@@ -840,9 +862,21 @@ function ProfileCard({
 }) {
   const isRight = align === 'right';
   const profileParallax = useSectionParallax<HTMLDivElement>({y: [-36, 48]});
+  const [profileScaleHydrated, setProfileScaleHydrated] = useState(false);
+  const {scrollYProgress: imageProgress} = useScroll({
+    target: profileScaleHydrated ? profileParallax.ref : undefined,
+    offset: ['start 120%', 'start 0%'] as any,
+  });
   const imagePointer = usePointerParallax({strength: 18, rotate: 5});
   const textY = useTransform(profileParallax.progress, [0, 1], profileParallax.shouldReduceMotion ? [0, 0] : [-16, 26]);
   const imageY = useTransform(profileParallax.progress, [0, 1], profileParallax.shouldReduceMotion ? [0, 0] : [-52, 64]);
+  const imageScale = useTransform(imageProgress, [0, 1], profileParallax.shouldReduceMotion ? [1, 1] : [0.8, 1]);
+
+  useEffect(() => {
+    if (!profileScaleHydrated && profileParallax.ref.current) {
+      setProfileScaleHydrated(true);
+    }
+  }, [profileScaleHydrated, profileParallax.ref]);
 
   return (
     <div ref={profileParallax.ref} className="grid gap-8 lg:grid-cols-[0.2fr_0.2fr_0.6fr] lg:items-center">
@@ -867,7 +901,7 @@ function ProfileCard({
       <RevealOnScroll delay={0.1} className="lg:order-2 lg:col-start-2">
         <motion.div
           {...imagePointer.bind}
-          style={{y: imageY, ...imagePointer.style}}
+          style={{y: imageY, scale: imageScale, ...imagePointer.style}}
           className="relative flex justify-center"
         >
           <img
@@ -1032,14 +1066,28 @@ function VideoSection({
   invitation: InvitationConfig;
   onOpenVideo: () => void;
 }) {
+  const sectionRef = useRef<HTMLElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
   const [hovering, setHovering] = useState(false);
+  const [videoScaleHydrated, setVideoScaleHydrated] = useState(false);
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
+  const {scrollYProgress} = useScroll({
+    target: videoScaleHydrated ? sectionRef : undefined,
+    offset: ['start 120%', 'start 0%'] as any,
+  });
+  const sectionScale = useTransform(scrollYProgress, [0, 1], shouldReduceMotion ? [1, 1] : [0.8, 1]);
+
+  useEffect(() => {
+    if (!videoScaleHydrated && sectionRef.current) {
+      setVideoScaleHydrated(true);
+    }
+  }, [videoScaleHydrated]);
 
   return (
-    <section className="bg-[#000000] md:h-screen">
-      <div
+    <section ref={sectionRef} className="bg-[#000000] md:h-screen">
+      <motion.div
+        style={{scale: sectionScale}}
         className={cn('group relative h-[56.25vw] w-full md:h-full', hovering && !shouldReduceMotion && 'cursor-none')}
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
@@ -1070,7 +1118,7 @@ function VideoSection({
             </motion.div>
           ) : null}
         </AnimatePresence>
-      </div>
+      </motion.div>
     </section>
   );
 }
@@ -1162,11 +1210,13 @@ function GallerySection({
         </div>
 
         <div className="grid grid-cols-[36%_64%] items-start gap-4 md:hidden">
-          <div className="sticky top-0 z-20 self-start bg-[#cfcfcf] py-4 pr-2">
-            <p className="text-[10px] uppercase tracking-[0.4em] text-black/45">Gallery</p>
-            <h2 className="mt-4 font-display text-[2.05rem] italic leading-[0.92]">
-              Our Pre-wedding Celebration.
-            </h2>
+          <div className="sticky top-0 z-40 h-screen self-start bg-[#cfcfcf] py-5 pr-2">
+            <div className="pt-1">
+              <p className="text-[10px] uppercase tracking-[0.4em] text-black/45">Gallery</p>
+              <h2 className="mt-4 font-display text-[2.05rem] italic leading-[0.92]">
+                Our Pre-wedding Celebration.
+              </h2>
+            </div>
           </div>
           <div className="space-y-8">
             {invitation.media.gallery.map((image, index) => (
