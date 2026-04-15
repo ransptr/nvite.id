@@ -1,11 +1,13 @@
 import {useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {cn} from '@/src/lib/utils';
+import {useAuth} from '@/src/hooks/useAuth';
 import {useLanguage} from '@/src/contexts/LanguageContext';
 import {translations} from '@/src/i18n/translations';
 
 export function LandingNav() {
   const {lang, toggle} = useLanguage();
+  const {session} = useAuth();
   const t = translations.nav;
 
   const [scrolled, setScrolled] = useState(false);
@@ -85,18 +87,20 @@ export function LandingNav() {
             <span className="text-[#e8ddd2]">|</span>
             <span className={cn('transition-opacity', lang === 'en' ? 'opacity-100' : 'opacity-40')}>EN</span>
           </button>
-          <a
-            href="/login"
+          <Link
+            to={session ? '/dashboard' : '/login'}
             className="text-sm font-medium text-[#5c4a35] transition-colors hover:text-[#1a1410]"
           >
-            {t.login[lang]}
-          </a>
-          <a
-            href="/signup"
-            className="rounded-full bg-[#1a1410] px-5 py-2 text-sm font-semibold text-[#f6f0ea] transition-all duration-200 hover:bg-[#c9974a] hover:shadow-[0_4px_20px_rgba(201,151,74,0.4)]"
-          >
-            {t.signup[lang]}
-          </a>
+            {session ? 'Dashboard' : t.login[lang]}
+          </Link>
+          {!session ? (
+            <Link
+              to="/signup"
+              className="rounded-full bg-[#1a1410] px-5 py-2 text-sm font-semibold text-[#f6f0ea] transition-all duration-200 hover:bg-[#c9974a] hover:shadow-[0_4px_20px_rgba(201,151,74,0.4)]"
+            >
+              {t.signup[lang]}
+            </Link>
+          ) : null}
         </div>
 
         {/* Mobile hamburger */}
@@ -155,18 +159,20 @@ export function LandingNav() {
               <span className="text-[#e8ddd2]">/</span>
               <span className={cn(lang === 'en' ? 'text-[#c9974a]' : 'text-[#b0a090]')}>EN</span>
             </button>
-            <a
-              href="/login"
+            <Link
+              to={session ? '/dashboard' : '/login'}
               className="rounded-xl px-3 py-3 text-center text-base font-medium text-[#5c4a35] transition-colors hover:bg-[#f0e8dc]"
             >
-              {t.login[lang]}
-            </a>
-            <a
-              href="/signup"
-              className="rounded-full bg-[#1a1410] py-3 text-center text-base font-semibold text-[#f6f0ea] transition-colors hover:bg-[#c9974a]"
-            >
-              {t.signup[lang]}
-            </a>
+              {session ? 'Dashboard' : t.login[lang]}
+            </Link>
+            {!session ? (
+              <Link
+                to="/signup"
+                className="rounded-full bg-[#1a1410] py-3 text-center text-base font-semibold text-[#f6f0ea] transition-colors hover:bg-[#c9974a]"
+              >
+                {t.signup[lang]}
+              </Link>
+            ) : null}
           </div>
         </nav>
       </div>

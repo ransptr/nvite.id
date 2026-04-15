@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {BrowserRouter, Route, Routes, useParams} from 'react-router-dom';
+import {BrowserRouter, Navigate, Route, Routes, useParams} from 'react-router-dom';
 import {InvitationPage} from '@/src/components/invitation/InvitationPage';
 import {LandingPage} from '@/src/pages/LandingPage';
 import {LoginPage} from '@/src/pages/LoginPage';
@@ -8,8 +8,11 @@ import {AuthCallbackPage} from '@/src/pages/AuthCallbackPage';
 import {DashboardPage} from '@/src/pages/DashboardPage';
 import {InvitationBuilderPage} from '@/src/pages/InvitationBuilderPage';
 import {RsvpManagerPage} from '@/src/pages/RsvpManagerPage';
+import {ProfilePage} from '@/src/pages/ProfilePage';
+import {PlanSelectionPage} from '@/src/pages/PlanSelectionPage';
 import {ProtectedRoute} from '@/src/components/shared/ProtectedRoute';
 import {supabase} from '@/src/lib/supabase';
+import {getTemplateBySlug} from '@/src/lib/templates';
 import type {InvitationConfig} from '@/src/types/invitation';
 
 function InvitationRoute() {
@@ -66,6 +69,41 @@ function InvitationRoute() {
   return <InvitationPage invitation={invitation} />;
 }
 
+function TemplateRoute() {
+  const {templateSlug} = useParams<{templateSlug: string}>();
+  const template = templateSlug ? getTemplateBySlug(templateSlug) : undefined;
+
+  if (!template) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#050505] px-6 text-center text-white">
+        <div className="max-w-xl space-y-5 rounded-[2rem] border border-white/10 bg-white/[0.03] px-8 py-10">
+          <p className="text-[10px] uppercase tracking-[0.35em] text-white/45">Template not found</p>
+          <h1 className="font-display text-5xl italic">This template does not exist.</h1>
+          <p className="text-base leading-relaxed text-white/65">
+            Please check the template URL or go back to the templates section.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!template.available || !template.content) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#050505] px-6 text-center text-white">
+        <div className="max-w-xl space-y-5 rounded-[2rem] border border-white/10 bg-white/[0.03] px-8 py-10">
+          <p className="text-[10px] uppercase tracking-[0.35em] text-white/45">Coming soon</p>
+          <h1 className="font-display text-5xl italic">{template.name} is not available yet.</h1>
+          <p className="text-base leading-relaxed text-white/65">
+            We are finishing this template now. Please check back soon.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  return <InvitationPage invitation={template.content} isTemplatePreview />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -75,6 +113,8 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/templates/:templateSlug" element={<TemplateRoute />} />
+        <Route path="/claire" element={<Navigate to="/templates/lumiere" replace />} />
 
         {/* Protected dashboard */}
         <Route
@@ -98,6 +138,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <RsvpManagerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/plans"
+          element={
+            <ProtectedRoute>
+              <PlanSelectionPage />
             </ProtectedRoute>
           }
         />

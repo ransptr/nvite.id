@@ -9,7 +9,6 @@ type TemplateSlug = 'lumiere' | 'bloom' | 'sage' | 'onyx';
 const TEMPLATES: Array<{
   slug: TemplateSlug;
   name: string;
-  demoSlug: string | null;
   available: boolean;
   palette: string[];
   previewBg: string;
@@ -18,7 +17,6 @@ const TEMPLATES: Array<{
   {
     slug: 'lumiere',
     name: 'Lumière',
-    demoSlug: 'claire',
     available: true,
     palette: ['#050505', '#c9974a', '#f6f0ea', '#2d1f0e'],
     previewBg: 'linear-gradient(160deg, #0d0805 0%, #1e140a 45%, #0a0603 100%)',
@@ -27,7 +25,6 @@ const TEMPLATES: Array<{
   {
     slug: 'bloom',
     name: 'Bloom',
-    demoSlug: null,
     available: false,
     palette: ['#fdf6ee', '#d4896a', '#8c5e3c', '#f0e0d0'],
     previewBg: 'linear-gradient(160deg, #fdf6ee 0%, #fae8d5 50%, #f0d8c0 100%)',
@@ -36,7 +33,6 @@ const TEMPLATES: Array<{
   {
     slug: 'sage',
     name: 'Sage',
-    demoSlug: null,
     available: false,
     palette: ['#f4f7f0', '#6b8c5e', '#3d5c32', '#c8d9bf'],
     previewBg: 'linear-gradient(160deg, #f4f7f0 0%, #dfebd5 50%, #c8d9bf 100%)',
@@ -45,7 +41,6 @@ const TEMPLATES: Array<{
   {
     slug: 'onyx',
     name: 'Onyx',
-    demoSlug: null,
     available: false,
     palette: ['#0a0a0a', '#e0e0e0', '#ffffff', '#333333'],
     previewBg: 'linear-gradient(160deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%)',
@@ -155,10 +150,7 @@ function TemplateCard({template}: {template: (typeof TEMPLATES)[number]}) {
     </div>
   );
 
-  if (template.available && template.demoSlug) {
-    return <Link to={`/${template.demoSlug}`}>{card}</Link>;
-  }
-  return card;
+  return <Link to={`/templates/${template.slug}`}>{card}</Link>;
 }
 
 export function TemplatesSection() {

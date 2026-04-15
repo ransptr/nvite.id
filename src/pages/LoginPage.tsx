@@ -1,12 +1,13 @@
 import {useState} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, Navigate, useNavigate} from 'react-router-dom';
 import {LoaderCircle} from 'lucide-react';
-import {signInWithPassword, signInWithMagicLink} from '@/src/hooks/useAuth';
+import {signInWithPassword, signInWithMagicLink, useAuth} from '@/src/hooks/useAuth';
 
 type Tab = 'password' | 'magic';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const {session, loading: authLoading} = useAuth();
   const [tab, setTab] = useState<Tab>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,6 +40,18 @@ export function LoginPage() {
       setMagicSent(true);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#fdfaf6]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#c9974a] border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (session) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#fdfaf6] px-4">

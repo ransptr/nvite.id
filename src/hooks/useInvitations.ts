@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useState} from 'react';
 import {supabase} from '@/src/lib/supabase';
+import {isReservedSlug} from '@/src/lib/templates';
 import type {InvitationConfig} from '@/src/types/invitation';
 
 export type InvitationRow = {
@@ -41,6 +42,7 @@ export function useInvitations() {
       supabase
         .from('invitations')
         .select('id, slug, is_published, content, created_at, updated_at')
+        .eq('owner_id', user.id)
         .order('created_at', {ascending: false}),
       supabase
         .from('profiles')
@@ -82,6 +84,10 @@ export function useInvitations() {
     slug: string,
     content: InvitationConfig,
   ): Promise<{id: string} | {error: string}> => {
+    if (isReservedSlug(slug)) {
+      return {error: 'This slug is reserved for system routes. Please choose a different slug.'};
+    }
+
     const taken = await isSlugTaken(slug);
     if (taken) return {error: 'This slug is already taken. Please choose a different one.'};
 
@@ -104,6 +110,10 @@ export function useInvitations() {
     updates: Partial<Pick<InvitationRow, 'slug' | 'is_published' | 'content'>>,
   ): Promise<{error: string} | null> => {
     if (updates.slug) {
+      if (isReservedSlug(updates.slug)) {
+        return {error: 'This slug is reserved for system routes. Please choose a different slug.'};
+      }
+
       const taken = await isSlugTaken(updates.slug, id);
       if (taken) return {error: 'This slug is already taken. Please choose a different one.'};
     }

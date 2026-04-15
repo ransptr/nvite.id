@@ -18,6 +18,7 @@ type RsvpSectionProps = {
   invitation: InvitationConfig;
   initialGuestName: string;
   maxGuestsOverride?: number | null;
+  readOnly?: boolean;
 };
 
 const COMMENTS_PER_PAGE = 5;
@@ -26,6 +27,7 @@ export function RsvpSection({
   invitation,
   initialGuestName,
   maxGuestsOverride,
+  readOnly = false,
 }: RsvpSectionProps) {
   const sectionParallax = useSectionParallax<HTMLElement>({y: [-36, 42]});
   const imagePointer = usePointerParallax({strength: 16, rotate: 4});
@@ -51,6 +53,20 @@ export function RsvpSection({
     return records.slice(start, start + COMMENTS_PER_PAGE);
   }, [page, records]);
 
+  const previewRecords = useMemo<RsvpRecord[]>(
+    () => invitation.rsvp.comments.map((comment, index) => ({
+      id: `preview-${index}`,
+      invitation_id: 'template-preview',
+      guest_name: comment.guestName,
+      attendance: 'attending',
+      guest_count: 1,
+      wishes: comment.wishes,
+      qr_value: null,
+      created_at: comment.createdAt,
+    })),
+    [invitation.rsvp.comments],
+  );
+
   const totalPages = Math.max(1, Math.ceil(records.length / COMMENTS_PER_PAGE));
 
   useEffect(() => {
@@ -58,6 +74,13 @@ export function RsvpSection({
   }, [initialGuestName]);
 
   useEffect(() => {
+    if (readOnly) {
+      setInvitationDbId(null);
+      setRecords(previewRecords);
+      setLoadError(null);
+      return;
+    }
+
     let active = true;
 
     // First resolve the invitation's DB id from its slug, then load RSVPs
@@ -98,7 +121,7 @@ export function RsvpSection({
     return () => {
       active = false;
     };
-  }, [invitation.slug]);
+  }, [invitation.slug, previewRecords, readOnly]);
 
   useEffect(() => {
     setPage((current) => Math.min(current, totalPages - 1));
@@ -106,6 +129,12 @@ export function RsvpSection({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (readOnly) {
+      setSubmitMessage('Template preview mode. RSVP submission is disabled on this page.');
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitMessage(null);
 
@@ -279,12 +308,18 @@ export function RsvpSection({
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || readOnly}
                   className="inline-flex items-center gap-3 bg-white px-6 py-3 text-[10px] font-semibold uppercase tracking-[0.34em] text-black transition hover:bg-[#e7d9ca] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                   Submit RSVP
                 </button>
+
+                {readOnly ? (
+                  <p className="text-sm leading-relaxed text-white/65">
+                    Template preview mode: RSVP is disabled here.
+                  </p>
+                ) : null}
 
                 {submitMessage ? (
                   <p className="text-sm leading-relaxed text-white/65">{submitMessage}</p>

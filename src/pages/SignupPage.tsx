@@ -1,10 +1,11 @@
 import {useState} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, Navigate, useNavigate} from 'react-router-dom';
 import {LoaderCircle} from 'lucide-react';
-import {signUp} from '@/src/hooks/useAuth';
+import {signUp, useAuth} from '@/src/hooks/useAuth';
 
 export function SignupPage() {
   const navigate = useNavigate();
+  const {session, loading: authLoading} = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,6 +33,18 @@ export function SignupPage() {
       setConfirmSent(true);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#fdfaf6]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#c9974a] border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (session) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   if (confirmSent) {
     return (

@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
-import {Globe, Pencil, Plus, Trash2, Users} from 'lucide-react';
+import {Crown, Globe, LogOut, Pencil, Plus, Trash2, UserRound, Users} from 'lucide-react';
 import {signOut, useAuth} from '@/src/hooks/useAuth';
 import {useInvitations} from '@/src/hooks/useInvitations';
 import type {InvitationRow} from '@/src/hooks/useInvitations';
@@ -37,52 +37,82 @@ export function DashboardPage() {
           <Link to="/" className="text-[11px] uppercase tracking-[0.35em] text-[#c9974a]">
             nvite.id
           </Link>
-          <div className="flex items-center gap-4">
-            {profile && (
-              <span className="rounded-full bg-[#f4ede3] px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-[#c9974a]">
-                {PLAN_LABELS[profile.plan] ?? profile.plan}
-              </span>
-            )}
-            <span className="hidden text-xs text-[#8a7a6e] sm:block">{user?.email}</span>
+          <div className="flex items-center gap-2.5">
+            <div className="hidden items-center gap-2 rounded-full border border-[#eadfce] bg-white px-2 py-1.5 shadow-[0_10px_30px_rgba(120,80,30,0.08)] sm:flex">
+              {profile && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f8f1e7] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.24em] text-[#b8863b]">
+                  <Crown className="h-3 w-3" />
+                  {PLAN_LABELS[profile.plan] ?? profile.plan}
+                </span>
+              )}
+
+              <Link
+                to="/dashboard/profile"
+                className="inline-flex items-center gap-1.5 rounded-full border border-transparent px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#6f604f] transition hover:border-[#eadfce] hover:bg-[#fdfaf6] hover:text-[#1a1612]"
+              >
+                <UserRound className="h-3.5 w-3.5" />
+                Profile
+              </Link>
+
+              {user?.email && (
+                <span className="max-w-[190px] truncate rounded-full bg-[#f6f1ea] px-3 py-1 text-[10px] text-[#7a6b5b]">
+                  {user.email}
+                </span>
+              )}
+            </div>
+
             <button
               type="button"
               onClick={handleSignOut}
-              className="text-[11px] uppercase tracking-[0.28em] text-[#8a7a6e] transition hover:text-[#1a1612]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#eadfce] bg-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#7a6b5b] transition hover:border-[#d9c4a4] hover:text-[#1a1612]"
             >
-              Sign out
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Sign out</span>
             </button>
+
+            <Link
+              to="/dashboard/profile"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#eadfce] bg-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#7a6b5b] transition hover:border-[#d9c4a4] hover:text-[#1a1612] sm:hidden"
+            >
+              <UserRound className="h-3.5 w-3.5" />
+              Profile
+            </Link>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-12">
         {/* Page title + create button */}
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div className="mb-8 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
             <h1 className="font-display text-4xl italic text-[#1a1612]">Your Invitations</h1>
-            {profile && planLimit !== Infinity && (
-              <p className="mt-1 text-sm text-[#8a7a6e]">
-                {invitations.length} / {planLimit} used
-              </p>
-            )}
+            <p className="mt-1 text-sm text-[#8a7a6e]">
+              {profile && planLimit !== Infinity
+                ? `${invitations.length} / ${planLimit} used`
+                : 'Manage your invitation projects and publish links.'}
+            </p>
           </div>
 
-          {atLimit ? (
-            <div className="rounded-xl border border-[#e8ddd4] bg-white px-5 py-3 text-sm text-[#6b5e52]">
-              Plan limit reached.{' '}
-              <Link to="/#pricing" className="text-[#c9974a] hover:underline">
-                Upgrade
+          <div className="rounded-2xl border border-[#e8ddd4] bg-white px-4 py-3 shadow-[0_12px_30px_rgba(120,80,30,0.06)]">
+            {atLimit ? (
+              <div className="flex items-center gap-3 text-sm text-[#6b5e52]">
+                <span className="rounded-full bg-[#f6f1ea] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.24em] text-[#b8863b]">
+                  Limit reached
+                </span>
+                <Link to="/dashboard/plans" className="text-[#c9974a] hover:underline">
+                  Upgrade plan
+                </Link>
+              </div>
+            ) : (
+              <Link
+                to="/dashboard/new"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#c9974a] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white transition hover:bg-[#b8863b]"
+              >
+                <Plus className="h-4 w-4" />
+                New invitation
               </Link>
-            </div>
-          ) : (
-            <Link
-              to="/dashboard/new"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#c9974a] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white transition hover:bg-[#b8863b]"
-            >
-              <Plus className="h-4 w-4" />
-              New invitation
-            </Link>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Loading */}

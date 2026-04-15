@@ -43,9 +43,10 @@ const NAV_ITEMS = [
 
 type InvitationPageProps = {
   invitation: InvitationConfig;
+  isTemplatePreview?: boolean;
 };
 
-export function InvitationPage({invitation}: InvitationPageProps) {
+export function InvitationPage({invitation, isTemplatePreview = false}: InvitationPageProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const heroVideoRef = useRef<HTMLVideoElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
@@ -228,6 +229,12 @@ export function InvitationPage({invitation}: InvitationPageProps) {
               onToggleAudio={toggleAudio}
               audioEnabled={isAudioEnabled}
             />
+
+            {isTemplatePreview ? (
+              <div className="fixed right-4 top-4 z-[95] rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.28em] text-white/75 backdrop-blur-md">
+                Template Preview
+              </div>
+            ) : null}
 
             <NavigationOverlay
               open={navOpen}
@@ -470,7 +477,7 @@ export function InvitationPage({invitation}: InvitationPageProps) {
               </div>
             </section>
 
-            <RsvpSection invitation={invitation} initialGuestName={guestName} />
+            <RsvpSection invitation={invitation} initialGuestName={guestName} readOnly={isTemplatePreview} />
 
             <VideoSection
               invitation={invitation}
