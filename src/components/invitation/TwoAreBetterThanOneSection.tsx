@@ -168,10 +168,8 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
               className="z-30 flex h-screen items-start justify-center bg-transparent pt-[14vh]"
             >
               <div className="mx-auto max-w-[980px] text-center">
-                <h2 className="font-display text-[clamp(4.8rem,8.1vw,7.9rem)] leading-[0.9] tracking-[-0.055em] text-[#c89b80]">
-                  <span className="block whitespace-nowrap">Two are better than one,</span>
-                  <span className="block whitespace-nowrap">for they have a good</span>
-                  <span className="block whitespace-nowrap">return for their labor</span>
+                <h2 className="font-display text-[clamp(3rem,5vw,5rem)] leading-[1.1] tracking-[-0.055em] text-center text-[#c89b80]">
+                  Two are better than one, for they have a good return for their labor
                 </h2>
                 <p className="mt-8 text-[11px] uppercase tracking-[0.38em] text-white/32">Ecclesiastes 4:9</p>
               </div>
@@ -193,31 +191,43 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
           </div>
         </div>
 
-        <div className="grid grid-cols-[43%_57%] items-start gap-4 md:hidden">
-          <div className="sticky top-0 z-40 h-screen self-start bg-black px-2 py-4">
-            <div className="pt-1">
-              <h2 className="font-display text-[2.9rem] leading-[0.92] tracking-[-0.05em] text-[#c89b80]">
-                Two are better than one,
-                <br />
-                for they have a good
-                <br />
-                return for their labor
-              </h2>
-              <p className="mt-3 max-w-[18ch] text-[10px] uppercase tracking-[0.36em] text-white/38">
-                Ecclesiastes 4:9
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {leftRail.concat(rightRail).map((image, index) => (
-              <div key={`${image.src}-${index}`}>
+        <div className="grid min-h-[300vh] grid-cols-[minmax(80px,0.36fr)_minmax(340px,1.42fr)_minmax(80px,0.36fr)] items-stretch gap-3 md:hidden">
+          <div className="space-y-[32vh] pt-[8vh]">
+            {leftRail.map((image, index) => (
+              <div key={image.src + image.alt}>
                 <RailImageCard
-                  image={{...image, speed: Math.max(0.24, image.speed * 0.6), drift: image.drift * 0.44}}
+                  image={{...image, speed: image.speed * 0.7, drift: image.drift * 0.5}}
                   progress={smoothProgress}
                   shouldReduceMotion={Boolean(shouldReduceMotion)}
                   direction={index % 2 === 0 ? 1 : -1}
-                  className={index % 3 === 0 ? 'mt-6' : ''}
+                  className={index % 2 === 0 ? 'ml-0 max-w-[100px]' : 'ml-4 max-w-[90px]'}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="relative">
+            <div className="sticky top-0 z-50 flex h-screen items-start justify-center bg-black pt-[8vh]">
+              <div className="mx-auto max-w-[280px] text-center">
+                <h2 className="font-display text-[clamp(2rem,4.5vw,2.8rem)] leading-[1.1] tracking-[-0.04em] text-center text-[#c89b80]">
+                  Two are better than one, for they have a good return for their labor
+                </h2>
+                <p className="mt-6 text-[9px] uppercase tracking-[0.32em] text-white/38">
+                  Ecclesiastes 4:9
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-[36vh] pt-[14vh]">
+            {rightRail.map((image, index) => (
+              <div key={image.src + image.alt}>
+                <RailImageCard
+                  image={{...image, speed: image.speed * 0.7, drift: image.drift * 0.5}}
+                  progress={smoothProgress}
+                  shouldReduceMotion={Boolean(shouldReduceMotion)}
+                  direction={index % 2 === 0 ? -1 : 1}
+                  className={index % 2 === 0 ? 'mr-4 ml-auto max-w-[90px]' : 'mr-0 ml-auto max-w-[100px]'}
                 />
               </div>
             ))}
