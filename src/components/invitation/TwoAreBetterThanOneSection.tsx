@@ -143,7 +143,7 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
   return (
     <section
       ref={sectionRef}
-      className="relative bg-[#000000] px-4 md:min-h-[220vh] md:px-10"
+      className="relative overflow-hidden bg-[#000000] px-4 md:min-h-[220vh] md:px-10"
     >
       <div className="mx-auto max-w-[1440px] py-10 pb-10 md:py-16">
         <div className="hidden md:grid md:grid-cols-[minmax(130px,0.36fr)_minmax(760px,1.42fr)_minmax(130px,0.36fr)] md:items-stretch md:gap-6 lg:grid-cols-[minmax(150px,0.38fr)_minmax(860px,1.54fr)_minmax(150px,0.38fr)] lg:gap-10">
@@ -191,7 +191,7 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
           </div>
         </div>
 
-        <div className="grid min-h-[300vh] grid-cols-[minmax(80px,0.36fr)_minmax(340px,1.42fr)_minmax(80px,0.36fr)] items-stretch gap-3 md:hidden">
+        <div className="grid min-h-[300vh] grid-cols-[1fr_2fr_1fr] gap-1 md:hidden">
           <div className="space-y-[32vh] pt-[8vh]">
             {leftRail.map((image, index) => (
               <div key={image.src + image.alt}>
@@ -200,7 +200,7 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
                   progress={smoothProgress}
                   shouldReduceMotion={Boolean(shouldReduceMotion)}
                   direction={index % 2 === 0 ? 1 : -1}
-                  className={index % 2 === 0 ? 'ml-0 max-w-[100px]' : 'ml-4 max-w-[90px]'}
+                  className={index % 2 === 0 ? 'ml-0 max-w-[70px]' : 'ml-2 max-w-[60px]'}
                 />
               </div>
             ))}
@@ -208,8 +208,8 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
 
           <div className="relative">
             <div className="sticky top-0 z-50 flex h-screen items-start justify-center bg-black pt-[8vh]">
-              <div className="mx-auto max-w-[280px] text-center">
-                <h2 className="font-display text-[clamp(2rem,4.5vw,2.8rem)] leading-[1.1] tracking-[-0.04em] text-center text-[#c89b80]">
+              <div className="mx-auto max-w-[180px] text-center">
+                <h2 className="font-display text-[clamp(1.4rem,4vw,1.8rem)] leading-[1.1] tracking-[-0.04em] text-center text-[#c89b80]">
                   Two are better than one, for they have a good return for their labor
                 </h2>
                 <p className="mt-6 text-[9px] uppercase tracking-[0.32em] text-white/38">
@@ -227,7 +227,7 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
                   progress={smoothProgress}
                   shouldReduceMotion={Boolean(shouldReduceMotion)}
                   direction={index % 2 === 0 ? -1 : 1}
-                  className={index % 2 === 0 ? 'mr-4 ml-auto max-w-[90px]' : 'mr-0 ml-auto max-w-[100px]'}
+                  className={index % 2 === 0 ? 'mr-2 ml-auto max-w-[60px]' : 'mr-0 ml-auto max-w-[70px]'}
                 />
               </div>
             ))}
