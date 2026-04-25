@@ -143,7 +143,7 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#000000] px-4 md:min-h-[220vh] md:px-10"
+      className="relative bg-[#000000] px-4 md:min-h-[220vh] md:px-10"
     >
       <div className="mx-auto max-w-[1440px] py-10 pb-10 md:py-16">
         <div className="hidden md:grid md:grid-cols-[minmax(130px,0.36fr)_minmax(760px,1.42fr)_minmax(130px,0.36fr)] md:items-stretch md:gap-6 lg:grid-cols-[minmax(150px,0.38fr)_minmax(860px,1.54fr)_minmax(150px,0.38fr)] lg:gap-10">
@@ -191,46 +191,34 @@ export function TwoAreBetterThanOneSection({invitation}: TwoAreBetterThanOneSect
           </div>
         </div>
 
-        <div className="grid min-h-[300vh] grid-cols-[1fr_2fr_1fr] gap-1 md:hidden">
-          <div className="space-y-[32vh] pt-[8vh]">
-            {leftRail.map((image, index) => (
-              <div key={image.src + image.alt}>
+        <div className="relative min-h-[240vh] md:hidden">
+          <div className="absolute inset-0 z-10 grid h-full grid-cols-2 content-between gap-x-3 gap-y-10 px-3 py-14">
+            {leftRail.concat(rightRail).map((image, index) => (
+              <div key={`${image.src}-${index}`} className={index % 3 === 0 ? 'mt-8' : ''}>
                 <RailImageCard
-                  image={{...image, speed: image.speed * 0.7, drift: image.drift * 0.5}}
+                  image={{...image, speed: Math.max(0.24, image.speed * 0.6), drift: image.drift * 0.44}}
                   progress={smoothProgress}
                   shouldReduceMotion={Boolean(shouldReduceMotion)}
                   direction={index % 2 === 0 ? 1 : -1}
-                  className={index % 2 === 0 ? 'ml-0 max-w-[70px]' : 'ml-2 max-w-[60px]'}
+                  className="opacity-45"
                 />
               </div>
             ))}
           </div>
 
-          <div className="relative">
-            <div className="sticky top-0 z-50 flex h-screen items-start justify-center bg-black pt-[8vh]">
-              <div className="mx-auto max-w-[180px] text-center">
-                <h2 className="font-display text-[clamp(1.4rem,4vw,1.8rem)] leading-[1.1] tracking-[-0.04em] text-center text-[#c89b80]">
-                  Two are better than one, for they have a good return for their labor
-                </h2>
-                <p className="mt-6 text-[9px] uppercase tracking-[0.32em] text-white/38">
-                  Ecclesiastes 4:9
-                </p>
-              </div>
+          <div className="sticky top-0 z-40 flex h-screen w-full items-start justify-center px-3 pt-6 text-center">
+            <div>
+              <h2 className="font-display text-[2.9rem] leading-[0.92] tracking-[-0.05em] text-[#c89b80]">
+                Two are better than one,
+                <br />
+                for they have a good
+                <br />
+                return for their labor
+              </h2>
+              <p className="mt-3 text-[10px] uppercase tracking-[0.36em] text-white/38">
+                Ecclesiastes 4:9
+              </p>
             </div>
-          </div>
-
-          <div className="space-y-[36vh] pt-[14vh]">
-            {rightRail.map((image, index) => (
-              <div key={image.src + image.alt}>
-                <RailImageCard
-                  image={{...image, speed: image.speed * 0.7, drift: image.drift * 0.5}}
-                  progress={smoothProgress}
-                  shouldReduceMotion={Boolean(shouldReduceMotion)}
-                  direction={index % 2 === 0 ? -1 : 1}
-                  className={index % 2 === 0 ? 'mr-2 ml-auto max-w-[60px]' : 'mr-0 ml-auto max-w-[70px]'}
-                />
-              </div>
-            ))}
           </div>
         </div>
       </div>
